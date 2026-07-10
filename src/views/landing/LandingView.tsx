@@ -134,7 +134,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
         <div className="landing-hero-content">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6" style={{ border: `1px solid ${COLORS.border}`, backgroundColor: COLORS.surface }}>
             <MapPin size={12} color={COLORS.lime} />
-            <span style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }} className="text-[10px]">BAHÍA BLANCA</span>
+            <span style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }} className="text-[10px]">Ingeniero White</span>
           </div>
 
           <h1 style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: "clamp(40px, 8vw, 80px)", letterSpacing: 2, lineHeight: 1 }}>
@@ -204,8 +204,8 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
             return (
               <div
                 key={act.name}
-                className="rounded-xl p-6 transition-all hover:scale-[1.02]"
-                style={{ backgroundColor: COLORS.surface, border: `1px solid ${COLORS.border}` }}
+                className="rounded-xl p-6 transition-all hover:scale-[1.02] landing-fade-in bg-white/10 backdrop-blur-md"
+style={{ border: `1px solid ${COLORS.border}` }}
               >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.surfaceHi, border: `1px solid ${COLORS.border}` }}>
                   <Icon size={22} color={COLORS.lime} />
@@ -236,7 +236,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className="rounded-xl p-6 flex flex-col relative"
+                className="rounded-xl p-6 flex flex-col relative landing-fade-in backdrop-blur-md"
                 style={{
                   backgroundColor: plan.popular ? COLORS.bg : COLORS.surfaceHi,
                   border: `1px solid ${plan.popular ? COLORS.lime : COLORS.border}`,
@@ -291,7 +291,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
           {COACHES.map((c) => (
             <div
               key={c.name}
-              className="flex items-center gap-4 px-6 py-5 rounded-xl w-full sm:w-auto"
+              className="flex items-center gap-4 px-6 py-5 rounded-xl w-full sm:w-auto landing-fade-in backdrop-blur-md"
               style={{ backgroundColor: COLORS.surface, border: `1px solid ${COLORS.border}` }}
             >
               <div className="text-4xl">{c.emoji}</div>
@@ -312,7 +312,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
             ENCONTRANOS
           </h2>
 
-          <div className="rounded-xl p-6 sm:p-8 inline-flex flex-col items-center gap-4" style={{ backgroundColor: COLORS.bg, border: `1px solid ${COLORS.border}` }}>
+          <div className="rounded-xl p-6 sm:p-8 inline-flex flex-col items-center gap-4 landing-fade-in backdrop-blur-md" style={{ backgroundColor: COLORS.bg, border: `1px solid ${COLORS.border}` }}>
             <MapPin size={32} color={COLORS.lime} />
             <div>
               <p style={{ fontFamily: FONTS.body, color: COLORS.textHi, fontWeight: 600 }} className="text-base">OZ Entrenamiento</p>
