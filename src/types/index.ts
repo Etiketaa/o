@@ -56,8 +56,31 @@ export interface Pago {
   metodo: "efectivo" | "transferencia" | "tarjeta" | "mercadopago";
   estado: "pagado" | "pendiente" | "vencido";
   descripcion: string;
+  mes_pago: number;
+  anio_pago: number;
+  comprobante_url?: string;
+  comprobante_tipo?: "imagen" | "pdf";
+  comprobante_nombre?: string;
+  verificado: boolean;
+  verificado_por?: string;
+  verificado_at?: string;
+  notas_admin?: string;
   created_at: string;
 }
+
+export interface PagoConfig {
+  id: string;
+  dia_limite: number;
+  monto_base: number;
+  cvu: string;
+  alias: string;
+  titular: string;
+  banco: string;
+  activo: boolean;
+  created_at: string;
+}
+
+export type EstadoPago = "pagado" | "pendiente" | "verificando" | "no_registrado";
 
 export interface Membresia {
   id: string;

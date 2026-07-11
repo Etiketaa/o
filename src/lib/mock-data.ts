@@ -70,8 +70,8 @@ export const mockAlumnoActual: Profile = {
 };
 
 export const mockPagos: Pago[] = [
-  { id: "p1", alumno_id: "a1", monto: 15000, fecha: "2025-07-01", metodo: "transferencia", estado: "pagado", descripcion: "Julio 2025 - Full", created_at: "" },
-  { id: "p2", alumno_id: "a2", monto: 12000, fecha: "2025-07-01", metodo: "efectivo", estado: "pagado", descripcion: "Julio 2025 - 3x semana", created_at: "" },
-  { id: "p3", alumno_id: "a5", monto: 15000, fecha: "2025-05-01", metodo: "mercadopago", estado: "pagado", descripcion: "Mayo 2025 - Full", created_at: "" },
-  { id: "p4", alumno_id: "a3", monto: 15000, fecha: "2025-07-05", metodo: "tarjeta", estado: "pendiente", descripcion: "Julio 2025 - Full", created_at: "" },
+  { id: "p1", alumno_id: "a1", monto: 16000, fecha: "2025-07-01", metodo: "transferencia", estado: "pagado", descripcion: "Julio 2025 - Full", mes_pago: 7, anio_pago: 2025, verificado: true, created_at: "" },
+  { id: "p2", alumno_id: "a2", monto: 14000, fecha: "2025-07-01", metodo: "efectivo", estado: "pagado", descripcion: "Julio 2025 - 3x semana", mes_pago: 7, anio_pago: 2025, verificado: true, created_at: "" },
+  { id: "p3", alumno_id: "a5", monto: 16000, fecha: "2025-05-01", metodo: "mercadopago", estado: "pagado", descripcion: "Mayo 2025 - Full", mes_pago: 5, anio_pago: 2025, verificado: true, created_at: "" },
+  { id: "p4", alumno_id: "a3", monto: 16000, fecha: "2025-07-05", metodo: "tarjeta", estado: "pendiente", descripcion: "Julio 2025 - Full", mes_pago: 7, anio_pago: 2025, verificado: false, created_at: "" },
 ];
