@@ -1,10 +1,9 @@
 import { DIAS } from "@/types";
-import { COLORS, FONTS } from "@/lib/utils";
 import { PlateMeter, Pill, Modal, Skeleton } from "@/components";
 import { useTurnosStore } from "@/stores/turnosStore";
 import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
-import { Calendar, Lock, CalendarCheck } from "lucide-react";
+import { Calendar, Lock } from "lucide-react";
 import type { TurnoConReservas } from "@/types";
 
 export function ReservarView() {
@@ -25,76 +24,94 @@ export function ReservarView() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex gap-2 overflow-x-auto px-4 pt-4 pb-3" style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-        {DIAS.map((d) => (
-          <Pill key={d} active={d === selectedDay} onClick={() => setSelectedDay(d)}>
-            {d}
-          </Pill>
-        ))}
+      <div className="px-6 pt-6 pb-4 border-b border-border">
+        <div className="max-w-6xl mx-auto">
+          <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-2 block font-medium">
+            Reservar
+          </span>
+          <h2 className="font-display text-text-hi text-2xl tracking-wide mb-4">
+            Elegí tu turno
+          </h2>
+          <div className="flex gap-2 overflow-x-auto">
+            {DIAS.map((d) => (
+              <Pill key={d} active={d === selectedDay} onClick={() => setSelectedDay(d)}>
+                {d}
+              </Pill>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
-        {list.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 gap-2" style={{ color: COLORS.textMuted }}>
-            <Calendar size={28} strokeWidth={1.5} />
-            <p style={{ fontFamily: FONTS.body }} className="text-sm">No hay turnos este día</p>
-          </div>
-        )}
-        {loading && list.length === 0
-          ? Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} height={64} className="rounded-lg" />
-            ))
-          : list.map((t) => {
-          const lleno = t.ocupados >= t.cupo;
-          const reservado = misReservas.has(t.id);
-          return (
-            <button
-              key={t.id}
-              onClick={() => setSelectedTurnoId(t.id)}
-              className="text-left rounded-lg p-4 flex items-center justify-between transition-all"
-              style={{
-                backgroundColor: reservado ? "rgba(212,255,61,0.06)" : COLORS.surface,
-                border: `1px solid ${reservado ? COLORS.limeDim : COLORS.border}`,
-                opacity: lleno && !reservado ? 0.55 : 1,
-              }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex flex-col items-center justify-center" style={{ width: 52 }}>
-                  <span style={{ fontFamily: FONTS.display, fontSize: 22, color: COLORS.textHi, letterSpacing: 1 }}>
-                    {t.hora}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span style={{ fontFamily: FONTS.body, fontWeight: 700, color: COLORS.textHi }}>{t.actividad}</span>
-                  <span style={{ fontFamily: FONTS.body, color: COLORS.textMuted }} className="text-xs">
-                    Coach {t.coach}
-                  </span>
-                  {reservado && (
-                    <span style={{ fontFamily: FONTS.mono, color: COLORS.lime }} className="text-xs">
-                      RESERVADO
-                    </span>
-                  )}
-                  {lleno && !reservado && (
-                    <span style={{ fontFamily: FONTS.mono, color: COLORS.danger }} className="text-xs">
-                      SIN CUPO
-                    </span>
-                  )}
-                </div>
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-6xl mx-auto">
+          {list.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-text-muted">
+              <Calendar size={32} strokeWidth={1.5} />
+              <p className="text-sm">No hay turnos este día</p>
+            </div>
+          )}
+
+          {loading && list.length === 0
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} height={80} className="rounded-xl mb-4" />
+              ))
+            : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {list.map((t) => {
+                  const lleno = t.ocupados >= t.cupo;
+                  const reservado = misReservas.has(t.id);
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => setSelectedTurnoId(t.id)}
+                      className={`text-left rounded-xl p-5 flex flex-col gap-3 transition-all ${
+                        reservado
+                          ? "bg-lime/5 border border-lime-dim"
+                          : "bg-surface border border-border hover:border-lime/30"
+                      } ${lleno && !reservado ? "opacity-55" : ""}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-display text-text-hi text-2xl tracking-wide block">
+                            {t.hora}
+                          </span>
+                          <span className="text-[10px] font-mono text-text-muted uppercase tracking-wider">
+                            Coach {t.coach}
+                          </span>
+                        </div>
+                        <PlateMeter ocupados={t.ocupados} total={t.cupo} />
+                      </div>
+                      <div className="pt-3 border-t border-border">
+                        <span className="font-body font-bold text-text-hi text-sm">
+                          {t.actividad}
+                        </span>
+                        {reservado && (
+                          <span className="text-[10px] font-mono text-lime block mt-1">
+                            RESERVADO
+                          </span>
+                        )}
+                        {lleno && !reservado && (
+                          <span className="text-[10px] font-mono text-danger block mt-1">
+                            SIN CUPO
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-              <PlateMeter ocupados={t.ocupados} total={t.cupo} />
-            </button>
-          );
-        })}
+            )}
+        </div>
       </div>
 
       <Modal open={!!openTurno} onClose={() => setSelectedTurnoId(null)}>
         {openTurno && (
           <div className="flex flex-col gap-4">
             <div>
-              <p style={{ fontFamily: FONTS.mono, color: COLORS.limeDim }} className="text-xs">
+              <p className="text-xs font-mono text-lime-dim mb-1">
                 {openTurno.hora} · Coach {openTurno.coach}
               </p>
-              <h3 style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: 26, letterSpacing: 1 }}>
+              <h3 className="font-display text-text-hi text-2xl tracking-wide">
                 {openTurno.actividad}
               </h3>
             </div>
@@ -105,32 +122,18 @@ export function ReservarView() {
                   if (user) useTurnosStore.getState().cancelarReserva(openTurno.id, user.id);
                   setSelectedTurnoId(null);
                 }}
-                className="w-full py-3 rounded-lg text-center font-bold"
-                style={{
-                  fontFamily: FONTS.body,
-                  color: COLORS.danger,
-                  border: `1px solid ${COLORS.danger}`,
-                  backgroundColor: "transparent",
-                }}
+                className="w-full py-3.5 rounded-xl text-center font-semibold text-sm border border-danger text-danger hover:bg-danger/5 transition-all"
               >
                 Cancelar mi reserva
               </button>
             ) : openTurno.ocupados >= openTurno.cupo ? (
-              <div
-                className="w-full py-3 rounded-lg text-center flex items-center justify-center gap-2"
-                style={{ fontFamily: FONTS.body, color: COLORS.textMuted, border: `1px solid ${COLORS.border}` }}
-              >
+              <div className="w-full py-3.5 rounded-xl text-center flex items-center justify-center gap-2 text-text-muted border border-border text-sm">
                 <Lock size={14} /> Sin cupo disponible
               </div>
             ) : (
               <button
                 onClick={() => handleReservar(openTurno)}
-                className="w-full py-3 rounded-lg text-center font-bold"
-                style={{
-                  fontFamily: FONTS.body,
-                  color: COLORS.bg,
-                  backgroundColor: COLORS.lime,
-                }}
+                className="w-full py-3.5 rounded-xl text-center font-semibold text-sm bg-lime text-bg hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all"
               >
                 Reservar mi lugar
               </button>

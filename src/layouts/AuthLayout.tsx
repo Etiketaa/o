@@ -205,39 +205,25 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
           </button>
         )}
 
-        {isMockMode && (
-          <div className="w-full flex flex-col gap-3 mt-4">
-            <p style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }} className="text-xs text-center">
-              ACCESO RÁPIDO (DEMO - sin backend)
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => loginAs("admin")}
-                className="flex-1 py-3 rounded-lg text-center text-sm font-semibold transition-opacity hover:opacity-90"
-                style={{
-                  fontFamily: FONTS.body,
-                  color: COLORS.lime,
-                  border: `1px solid ${COLORS.limeDim}`,
-                  backgroundColor: "transparent",
-                }}
-              >
-                Demo Admin
-              </button>
-              <button
-                onClick={() => loginAs("alumno")}
-                className="flex-1 py-3 rounded-lg text-center text-sm font-semibold transition-opacity hover:opacity-90"
-                style={{
-                  fontFamily: FONTS.body,
-                  color: COLORS.lime,
-                  border: `1px solid ${COLORS.limeDim}`,
-                  backgroundColor: "transparent",
-                }}
-              >
-                Demo Alumno
-              </button>
-            </div>
+        <div className="w-full flex flex-col gap-3 mt-4">
+          <p className="text-[10px] font-mono text-text-muted text-center uppercase tracking-wider">
+            Acceso rápido (demo)
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => loginAs("admin")}
+              className="flex-1 py-3 rounded-lg text-center text-sm font-semibold border border-lime-dim text-lime hover:bg-lime/5 transition-all"
+            >
+              Demo Admin
+            </button>
+            <button
+              onClick={() => loginAs("alumno")}
+              className="flex-1 py-3 rounded-lg text-center text-sm font-semibold border border-lime-dim text-lime hover:bg-lime/5 transition-all"
+            >
+              Demo Alumno
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

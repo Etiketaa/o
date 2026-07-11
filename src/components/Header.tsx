@@ -1,29 +1,34 @@
 import { Dumbbell, Clock, LogOut } from "lucide-react";
-import { COLORS, FONTS } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 
 export function Header() {
   const { user, logout } = useAuthStore();
 
   return (
-    <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-3">
-      <div className="flex items-center gap-2">
-        <Dumbbell size={20} color={COLORS.lime} />
-        <span style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: 22, letterSpacing: 1 }}>
-          TU GYM
-        </span>
-      </div>
+    <div className="flex items-center justify-between px-5 pt-5 pb-4">
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1" style={{ color: COLORS.textMuted }}>
-          <Clock size={14} />
-          <span style={{ fontFamily: FONTS.mono }} className="text-xs">Ingeniero White</span>
+        <div className="w-9 h-9 rounded-lg bg-lime flex items-center justify-center">
+          <Dumbbell size={18} className="text-bg" />
+        </div>
+        <div className="flex flex-col leading-none">
+          <span className="font-display text-text-hi text-lg tracking-[0.1em]">
+            OZ
+          </span>
+          <span className="text-[8px] tracking-[0.2em] uppercase text-text-muted">
+            ENTRENAMIENTO
+          </span>
+        </div>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-1.5 text-text-muted">
+          <Clock size={12} />
+          <span className="text-[10px] tracking-wider uppercase">Ingeniero White</span>
         </div>
         {user && (
           <button
             onClick={logout}
             aria-label="Cerrar sesión"
-            className="p-1.5 rounded-lg transition-colors hover:bg-[var(--color-surface-hi)] focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
-            style={{ color: COLORS.textMuted }}
+            className="p-2 rounded-lg text-text-muted hover:text-text-hi hover:bg-surface transition-all"
             title="Cerrar sesión"
           >
             <LogOut size={16} />

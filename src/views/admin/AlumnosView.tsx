@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { Search } from "lucide-react";
-import { COLORS, FONTS } from "@/lib/utils";
 import { StatusChip, Modal, Avatar } from "@/components";
 import { useTurnosStore } from "@/stores/turnosStore";
 import type { Profile } from "@/types";
@@ -17,48 +16,69 @@ export function AlumnosView() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 pt-4 pb-3" style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-        <div
-          className="flex items-center gap-2 px-3 py-2 rounded-lg"
-          style={{ backgroundColor: COLORS.surface, border: `1px solid ${COLORS.border}` }}
-        >
-          <Search size={16} color={COLORS.textMuted} />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar alumno..."
-            style={{ fontFamily: FONTS.body, color: COLORS.textHi, backgroundColor: "transparent" }}
-            className="flex-1 outline-none text-sm placeholder-gray-500"
-          />
+      <div className="px-6 pt-6 pb-4 border-b border-border">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-2 block font-medium">
+                Alumnos
+              </span>
+              <h2 className="font-display text-text-hi text-2xl tracking-wide">
+                {alumnos.length} alumnos
+              </h2>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-bg border border-border rounded-lg max-w-md">
+            <Search size={16} className="text-text-muted" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar alumno..."
+              className="flex-1 outline-none text-sm bg-transparent text-text-hi placeholder:text-text-muted"
+            />
+          </div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 py-2">
-        {filtered.map((a) => (
-          <button
-            key={a.id}
-            onClick={() => setSelectedAlumno(a)}
-            className="w-full flex items-center justify-between py-3 transition-opacity hover:opacity-80"
-            style={{ borderBottom: `1px solid ${COLORS.border}`, textAlign: "left" }}
-          >
-            <div className="flex items-center gap-3">
-              <Avatar nombre={a.nombre} size="sm" />
-              <div className="flex flex-col">
-                <span style={{ fontFamily: FONTS.body, fontWeight: 600, color: COLORS.textHi }} className="text-sm">
-                  {a.nombre}
-                </span>
-                <span style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }} className="text-xs">
-                  Plan {a.plan}
-                </span>
+
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Table header - desktop */}
+          <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 text-[10px] font-mono text-text-muted uppercase tracking-wider border-b border-border mb-2">
+            <div className="col-span-5">Nombre</div>
+            <div className="col-span-3">Email</div>
+            <div className="col-span-2">Plan</div>
+            <div className="col-span-2 text-right">Estado</div>
+          </div>
+
+          {/* List */}
+          {filtered.map((a) => (
+            <button
+              key={a.id}
+              onClick={() => setSelectedAlumno(a)}
+              className="w-full flex items-center justify-between py-4 border-b border-border last:border-0 hover:bg-surface/50 transition-colors text-left md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 rounded-lg"
+            >
+              <div className="col-span-5 flex items-center gap-3">
+                <Avatar nombre={a.nombre} size="sm" />
+                <span className="text-text-hi font-semibold text-sm">{a.nombre}</span>
               </div>
-            </div>
-            <StatusChip estado={a.estado} />
-          </button>
-        ))}
-        {filtered.length === 0 && (
-          <p style={{ fontFamily: FONTS.body, color: COLORS.textMuted }} className="text-sm text-center py-10">
-            No se encontraron alumnos
-          </p>
-        )}
+              <div className="col-span-3 text-text-muted text-sm hidden md:block">
+                {a.email}
+              </div>
+              <div className="col-span-2 text-[10px] font-mono text-text-muted uppercase tracking-wider hidden md:block">
+                {a.plan}
+              </div>
+              <div className="col-span-2 flex justify-end">
+                <StatusChip estado={a.estado} />
+              </div>
+            </button>
+          ))}
+
+          {filtered.length === 0 && (
+            <p className="text-text-muted text-sm text-center py-10">
+              No se encontraron alumnos
+            </p>
+          )}
+        </div>
       </div>
 
       <Modal open={!!selectedAlumno} onClose={() => setSelectedAlumno(null)}>
@@ -67,18 +87,18 @@ export function AlumnosView() {
             <div className="flex items-center gap-4">
               <Avatar nombre={selectedAlumno.nombre} size="lg" />
               <div>
-                <h3 style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: 26, letterSpacing: 1 }}>
+                <h3 className="font-display text-text-hi text-2xl tracking-wide">
                   {selectedAlumno.nombre}
                 </h3>
-                <p style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }} className="text-xs">{selectedAlumno.telefono}</p>
+                <p className="text-xs font-mono text-text-muted">{selectedAlumno.telefono}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <StatusChip estado={selectedAlumno.estado} />
-              <span style={{ fontFamily: FONTS.body, color: COLORS.textMid }} className="text-sm">Plan {selectedAlumno.plan}</span>
+              <span className="text-text-mid text-sm">Plan {selectedAlumno.plan}</span>
             </div>
-            <div className="rounded-lg p-4" style={{ backgroundColor: COLORS.surfaceHi, border: `1px solid ${COLORS.border}` }}>
-              <p style={{ fontFamily: FONTS.body, color: COLORS.textMuted }} className="text-xs">
+            <div className="bg-surface border border-border rounded-lg p-4">
+              <p className="text-text-muted text-xs">
                 Historial de asistencias y estado de pago disponibles próximamente.
               </p>
             </div>

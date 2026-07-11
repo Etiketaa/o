@@ -5,6 +5,7 @@ export { Modal } from "./Modal";
 export { Avatar } from "./Avatar";
 export { Header } from "./Header";
 export { BottomNav } from "./BottomNav";
+export { Sidebar } from "./Sidebar";
 export { LoadingScreen } from "./LoadingScreen";
 export { GlassCard } from "./GlassCard";
 export { Skeleton } from "./Skeleton";

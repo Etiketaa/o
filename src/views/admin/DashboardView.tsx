@@ -1,27 +1,84 @@
 import { useMemo } from "react";
-import { Users, Calendar, TrendingUp, DollarSign } from "lucide-react";
-import { COLORS, FONTS, formatMoney } from "@/lib/utils";
+import { Users, Calendar, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight, Clock, Zap } from "lucide-react";
+import { formatMoney } from "@/lib/utils";
 import { useTurnosStore } from "@/stores/turnosStore";
-import { mockPagos } from "@/lib/mock-data";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
+import { mockPagos, mockTurnos } from "@/lib/mock-data";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
+
+function StatCard({ label, value, icon: Icon, trend, trendLabel, accent }: {
+  label: string;
+  value: string | number;
+  icon: React.ElementType;
+  trend?: "up" | "down";
+  trendLabel?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className={`relative rounded-2xl p-5 overflow-hidden transition-all hover:scale-[1.02] ${
+      accent ? "bg-lime text-bg" : "bg-surface border border-border"
+    }`}>
+      {accent && <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-8 translate-x-8" />}
+      <div className="relative">
+        <div className="flex items-center justify-between mb-4">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+            accent ? "bg-bg/20" : "bg-lime/10"
+          }`}>
+            <Icon size={18} className={accent ? "text-bg" : "text-lime"} />
+          </div>
+          {trend && trendLabel && (
+            <div className={`flex items-center gap-1 text-xs font-medium ${
+              trend === "up" ? "text-lime" : "text-danger"
+            }`}>
+              {trend === "up" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+              {trendLabel}
+            </div>
+          )}
+        </div>
+        <div className={`font-display text-4xl tracking-wide mb-1 ${accent ? "text-bg" : "text-text-hi"}`}>
+          {value}
+        </div>
+        <div className={`text-[11px] font-mono uppercase tracking-wider ${
+          accent ? "text-bg/70" : "text-text-muted"
+        }`}>
+          {label}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-bg border border-border rounded-lg px-3 py-2 shadow-xl">
+      <p className="text-text-hi text-sm font-medium">{label}</p>
+      <p className="text-lime text-xs font-mono">{payload[0].value} asistentes</p>
+    </div>
+  );
+}
 
 export function DashboardView() {
   const { turnos, alumnos } = useTurnosStore();
 
   const stats = useMemo(() => {
     const alumnosActivos = alumnos.filter((a) => a.estado === "activo").length;
+    const alumnosVencidos = alumnos.filter((a) => a.estado === "vencido").length;
     const ingresosMes = mockPagos.filter((p) => p.estado === "pagado").reduce((s, p) => s + p.monto, 0);
+    const ingresosPendientes = mockPagos.filter((p) => p.estado === "pendiente").reduce((s, p) => s + p.monto, 0);
 
-    let turnosHoy = 0;
-    let asistentesHoy = 0;
+    let turnosSemana = 0;
+    let asistentesSemana = 0;
     for (const dia of Object.values(turnos)) {
       for (const t of dia) {
-        turnosHoy++;
-        asistentesHoy += t.ocupados;
+        turnosSemana++;
+        asistentesSemana += t.ocupados;
       }
     }
 
-    return { alumnosActivos, totalAlumnos: alumnos.length, turnosHoy, asistentesHoy, ingresosMes };
+    const capacidadTotal = Object.values(turnos).flat().reduce((s, t) => s + t.cupo, 0);
+    const ocupacionPromedio = capacidadTotal > 0 ? Math.round((asistentesSemana / capacidadTotal) * 100) : 0;
+
+    return { alumnosActivos, alumnosVencidos, totalAlumnos: alumnos.length, turnosSemana, asistentesSemana, ingresosMes, ingresosPendientes, ocupacionPromedio };
   }, [turnos, alumnos]);
 
   const chartData = useMemo(() => {
@@ -29,75 +86,225 @@ export function DashboardView() {
       const dayTurnos = turnos[dia as keyof typeof turnos] || [];
       return {
         name: dia,
-        turnos: dayTurnos.length,
         asistentes: dayTurnos.reduce((s, t) => s + t.ocupados, 0),
+        capacidad: dayTurnos.reduce((s, t) => s + t.cupo, 0),
       };
     });
   }, [turnos]);
 
-  const cards = [
-    { label: "Alumnos activos", value: stats.alumnosActivos, icon: Users, color: COLORS.lime },
-    { label: "Turnos / semana", value: stats.turnosHoy, icon: Calendar, color: COLORS.steel },
-    { label: "Asistentes / semana", value: stats.asistentesHoy, icon: TrendingUp, color: COLORS.lime },
-    { label: "Ingresos mes", value: formatMoney(stats.ingresosMes), icon: DollarSign, color: COLORS.lime },
-  ];
+  const proximosTurnos = useMemo(() => {
+    const todos = Object.values(turnos).flat();
+    return todos.slice(0, 5).sort((a, b) => a.hora.localeCompare(b.hora));
+  }, [turnos]);
+
+  const ultimosPagos = mockPagos
+    .filter((p) => p.estado === "pagado")
+    .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+    .slice(0, 4);
+
+  const alumnosById = Object.fromEntries(alumnos.map((a) => [a.id, a]));
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3">
-        {cards.map((c) => {
-          const Icon = c.icon;
-          return (
-            <div
-              key={c.label}
-              className="rounded-lg p-4 flex flex-col gap-2"
-              style={{ backgroundColor: COLORS.surface, border: `1px solid ${COLORS.border}` }}
-            >
-              <Icon size={18} color={c.color} />
-              <span style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: 28, letterSpacing: 1 }}>
-                {c.value}
-              </span>
-              <span style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }} className="text-[10px] uppercase">
-                {c.label}
+    <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 rounded-full bg-lime animate-pulse" />
+              <span className="text-[11px] tracking-[0.2em] uppercase text-lime font-medium">
+                Vista general
               </span>
             </div>
-          );
-        })}
-      </div>
-
-      <div className="rounded-lg p-4" style={{ backgroundColor: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
-        <span style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }} className="text-xs uppercase block mb-3">
-          Asistencia semanal
-        </span>
-        <div style={{ height: 180 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} barSize={20}>
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: COLORS.textMuted, fontSize: 11, fontFamily: FONTS.mono }}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: COLORS.textMuted, fontSize: 10, fontFamily: FONTS.mono }}
-                width={30}
-              />
-              <Bar dataKey="asistentes" radius={[4, 4, 0, 0]}>
-                {chartData.map((_, i) => (
-                  <Cell key={i} fill={i % 2 === 0 ? COLORS.lime : COLORS.limeDim} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+            <h1 className="font-display text-text-hi text-4xl lg:text-5xl tracking-wide">
+              Dashboard
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 text-text-muted text-sm">
+            <Clock size={14} />
+            <span className="font-mono text-xs">Última actualización: ahora</span>
+          </div>
         </div>
-      </div>
 
-      <div className="rounded-lg p-4" style={{ backgroundColor: COLORS.surfaceHi, border: `1px solid ${COLORS.border}` }}>
-        <p style={{ fontFamily: FONTS.body, color: COLORS.textMuted }} className="text-xs">
-          {stats.totalAlumnos - stats.alumnosActivos} alumnos con plan vencido. Dashboard completo con métricas avanzadas disponible próximamente.
-        </p>
+        {/* Stats grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            label="Alumnos activos"
+            value={stats.alumnosActivos}
+            icon={Users}
+            trend="up"
+            trendLabel={`+${stats.totalAlumnos} total`}
+          />
+          <StatCard
+            label="Turnos / semana"
+            value={stats.turnosSemana}
+            icon={Calendar}
+          />
+          <StatCard
+            label="Asistentes / semana"
+            value={stats.asistentesSemana}
+            icon={TrendingUp}
+            trend="up"
+            trendLabel={`${stats.ocupacionPromedio}% ocupación`}
+          />
+          <StatCard
+            label="Ingresos mes"
+            value={formatMoney(stats.ingresosMes)}
+            icon={DollarSign}
+            accent
+          />
+        </div>
+
+        {/* Main content grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Chart - 2 columns */}
+          <div className="lg:col-span-2 bg-surface border border-border rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-text-hi font-semibold text-sm mb-1">Asistencia semanal</h3>
+                <p className="text-text-muted text-xs">Asistentes por día de la semana</p>
+              </div>
+              <div className="flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded bg-lime" />
+                  <span className="text-text-muted">Asistentes</span>
+                </div>
+              </div>
+            </div>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} barSize={32} barGap={8}>
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "var(--color-text-muted)", fontSize: 11, fontFamily: "var(--font-mono)" }}
+                    dy={8}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "var(--color-text-muted)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+                    width={35}
+                  />
+                  <Tooltip content={<CustomTooltip />} cursor={false} />
+                  <Bar dataKey="asistentes" radius={[6, 6, 0, 0]}>
+                    {chartData.map((_, i) => (
+                      <Cell key={i} fill={i % 2 === 0 ? "var(--color-lime)" : "var(--color-lime-dim)"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Right sidebar */}
+          <div className="flex flex-col gap-6">
+            {/* Quick stats */}
+            <div className="bg-surface border border-border rounded-2xl p-6">
+              <h3 className="text-text-hi font-semibold text-sm mb-4">Resumen rápido</h3>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between py-3 border-b border-border">
+                  <span className="text-text-muted text-sm">Alumnos activos</span>
+                  <span className="text-lime font-mono font-bold text-sm">{stats.alumnosActivos}</span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-b border-border">
+                  <span className="text-text-muted text-sm">Planes vencidos</span>
+                  <span className="text-danger font-mono font-bold text-sm">{stats.alumnosVencidos}</span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-b border-border">
+                  <span className="text-text-muted text-sm">Ocupación promedio</span>
+                  <span className="text-lime font-mono font-bold text-sm">{stats.ocupacionPromedio}%</span>
+                </div>
+                <div className="flex items-center justify-between py-3">
+                  <span className="text-text-muted text-sm">Pendiente cobro</span>
+                  <span className="text-steel font-mono font-bold text-sm">{formatMoney(stats.ingresosPendientes)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Próximos turnos */}
+            <div className="bg-surface border border-border rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap size={14} className="text-lime" />
+                <h3 className="text-text-hi font-semibold text-sm">Próximos turnos</h3>
+              </div>
+              <div className="flex flex-col gap-2">
+                {proximosTurnos.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg border border-border">
+                    <div className="flex items-center gap-3">
+                      <span className="font-display text-text-hi text-lg w-14">{t.hora}</span>
+                      <div>
+                        <span className="text-text-hi text-xs font-medium block">{t.actividad}</span>
+                        <span className="text-text-muted text-[10px] font-mono">{t.coach}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-lime text-xs font-mono font-bold">{t.ocupados}</span>
+                      <span className="text-text-muted text-[10px] font-mono">/{t.cupo}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Últimos pagos */}
+          <div className="bg-surface border border-border rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-text-hi font-semibold text-sm">Últimos pagos</h3>
+              <span className="text-lime text-xs font-mono">{ultimosPagos.length} registros</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {ultimosPagos.map((p) => {
+                const al = alumnosById[p.alumno_id];
+                return (
+                  <div key={p.id} className="flex items-center justify-between py-3 px-3 rounded-lg bg-bg border border-border">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-lime/20 flex items-center justify-center">
+                        <span className="text-lime text-xs font-bold">{al?.nombre?.charAt(0) || "?"}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-hi text-sm font-medium block">{al?.nombre || "N/A"}</span>
+                        <span className="text-text-muted text-[10px] font-mono">{p.descripcion}</span>
+                      </div>
+                    </div>
+                    <span className="text-text-hi text-sm font-mono font-bold">{formatMoney(p.monto)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Alumnos con plan vencido */}
+          <div className="bg-surface border border-border rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-text-hi font-semibold text-sm">Planes vencidos</h3>
+              <span className="text-danger text-xs font-mono">{stats.alumnosVencidos} alumnos</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {alumnos.filter((a) => a.estado === "vencido").slice(0, 5).map((al) => (
+                <div key={al.id} className="flex items-center justify-between py-3 px-3 rounded-lg bg-bg border border-border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center">
+                      <span className="text-danger text-xs font-bold">{al.nombre.charAt(0)}</span>
+                    </div>
+                    <div>
+                      <span className="text-text-hi text-sm font-medium block">{al.nombre}</span>
+                      <span className="text-text-muted text-[10px] font-mono">Plan {al.plan}</span>
+                    </div>
+                  </div>
+                  <span className="text-danger text-[10px] font-mono px-2 py-1 rounded-full border border-danger/30">
+                    VENCIDO
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

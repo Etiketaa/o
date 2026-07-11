@@ -122,6 +122,13 @@ input:-webkit-autofill:focus {
   text-shadow: 0 0 30px rgba(212,255,61,0.25);
 }
 
+/* Hero text sweep animation */
+@keyframes sweep {
+  0% { background-position: 200% 0; }
+  45% { background-position: -50% 0; }
+  100% { background-position: -50% 0; }
+}
+
 /* Smooth page transitions */
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(30px); }
@@ -150,5 +157,8 @@ input:-webkit-autofill:focus {
   }
   .glass-card-hover:hover {
     transform: none;
+  }
+  [style*="animation: sweep"] {
+    animation: none !important;
   }
 }

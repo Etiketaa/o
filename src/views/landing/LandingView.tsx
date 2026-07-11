@@ -23,10 +23,6 @@ function InstagramIcon({ size = 18, className = "" }: { size?: number; className
   );
 }
 
-import { COLORS } from "@/lib/utils";
-import { GlassCard } from "@/components/GlassCard";
-import { useInView } from "@/hooks/useInView";
-
 const ACTIVITIES = [
   {
     name: "Funcional",
@@ -73,23 +69,6 @@ const COACHES = [
   { name: "Vale", specialty: "Pesas & Movilidad", initials: "VA", color: "#8FA83A" },
 ];
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="text-xs font-mono tracking-widest text-lime uppercase">{children}</span>
-  );
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2
-      className="font-display text-text-hi tracking-wide mt-2"
-      style={{ fontSize: "clamp(32px, 5vw, 52px)" }}
-    >
-      {children}
-    </h2>
-  );
-}
-
 export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -100,37 +79,49 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const [heroRef, heroIn] = useInView({ threshold: 0.1 });
-  const [activitiesRef, activitiesIn] = useInView({ threshold: 0.1 });
-  const [plansRef, plansIn] = useInView({ threshold: 0.1 });
-  const [coachesRef, coachesIn] = useInView({ threshold: 0.1 });
-  const [ctaRef, ctaIn] = useInView({ threshold: 0.1 });
-
   return (
     <div className="min-h-screen overflow-y-auto bg-bg">
       {/* Navbar */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-bg/90 backdrop-blur-xl border-b border-border" : "bg-transparent"}`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? "bg-bg/95 backdrop-blur-xl border-b border-border" : "bg-bg/80 backdrop-blur-md"
+        }`}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-          <a href="#" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-lime flex items-center justify-center transition-transform group-hover:scale-105">
-              <Dumbbell size={18} className="text-bg" />
+        <div className="max-w-[1200px] mx-auto px-6 md:px-8 flex items-center justify-between h-16 md:h-20">
+          <a href="#" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-lg bg-lime flex items-center justify-center transition-transform group-hover:scale-105">
+              <Dumbbell size={20} className="text-bg" />
             </div>
-            <span className="font-display text-text-hi text-xl tracking-wider hidden sm:block">
-              OZ ENTRENAMIENTO
-            </span>
+            <div className="hidden sm:block">
+              <span className="font-display text-text-hi text-xl tracking-[0.1em] block leading-none">
+                OZ
+              </span>
+              <span className="text-[9px] tracking-[0.25em] uppercase text-text-muted block">
+                ENTRENAMIENTO
+              </span>
+            </div>
           </a>
 
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#actividades" className="text-xs font-mono text-text-muted hover:text-text-hi transition-colors">ACTIVIDADES</a>
-            <a href="#planes" className="text-xs font-mono text-text-muted hover:text-text-hi transition-colors">PLANES</a>
-            <a href="#coaches" className="text-xs font-mono text-text-muted hover:text-text-hi transition-colors">COACHES</a>
+          <div className="hidden md:flex items-center gap-10">
+            {[
+              { href: "#actividades", label: "Actividades" },
+              { href: "#planes", label: "Planes" },
+              { href: "#coaches", label: "Coaches" },
+              { href: "#ubicacion", label: "Ubicación" },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="text-[13px] tracking-[0.06em] text-text-muted hover:text-text-hi transition-colors duration-300"
+              >
+                {item.label}
+              </a>
+            ))}
             <button
               onClick={onGoToApp}
-              className="px-5 py-2 rounded-lg text-sm font-bold bg-lime text-bg hover:shadow-glow-lime transition-all hover:scale-105"
+              className="px-6 py-3 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-[3px] hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all duration-300 hover:-translate-y-0.5"
             >
-              RESERVAR CLASE
+              Reservar
             </button>
           </div>
 
@@ -139,327 +130,349 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
           >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
-        {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden px-4 pb-6 pt-2 flex flex-col gap-1 bg-bg/95 backdrop-blur-xl border-b border-border animate-slide-up">
+          <div className="md:hidden px-6 pb-6 pt-2 flex flex-col gap-1 bg-bg/98 backdrop-blur-xl border-b border-border">
             {[
-              { href: "#actividades", label: "ACTIVIDADES" },
-              { href: "#planes", label: "PLANES" },
-              { href: "#coaches", label: "COACHES" },
+              { href: "#actividades", label: "Actividades" },
+              { href: "#planes", label: "Planes" },
+              { href: "#coaches", label: "Coaches" },
+              { href: "#ubicacion", label: "Ubicación" },
             ].map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className="text-sm font-mono text-text-muted hover:text-text-hi py-3 px-3 rounded-lg hover:bg-surface transition-colors"
+                className="text-sm text-text-muted hover:text-text-hi py-3 px-2 transition-colors"
               >
                 {item.label}
               </a>
             ))}
             <button
               onClick={() => { setMenuOpen(false); onGoToApp(); }}
-              className="w-full py-3 mt-2 rounded-lg text-sm font-bold bg-lime text-bg hover:shadow-glow-lime transition-all"
+              className="w-full py-3.5 mt-2 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-[3px]"
             >
-              RESERVAR CLASE
+              Reservar Clase
             </button>
           </div>
         )}
       </nav>
 
       {/* Hero */}
-      <section
-        ref={heroRef}
-        className={`hero-gradient flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-28 pb-20 sm:pt-40 sm:pb-28 ${heroIn ? "animate-slide-up" : "opacity-0"}`}
-        style={{ minHeight: "100vh" }}
-      >
-        <div className="max-w-3xl mx-auto">
-          {/* Location badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-surface/60 backdrop-blur-sm mb-10 animate-scale-in">
-            <MapPin size={13} className="text-lime" />
-            <span className="text-xs font-mono text-text-muted tracking-wide">INGENIERO WHITE, BS. AS.</span>
+      <section className="relative min-h-[90vh] md:min-h-screen flex items-center">
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: "url(https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&auto=format&fit=crop)",
+            backgroundSize: "cover",
+            backgroundPosition: "center 30%",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/90 to-bg/60" />
+
+        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-6 md:px-8 pt-24 pb-16 md:pt-0">
+          <div className="max-w-[600px]">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-[1px] bg-lime" />
+              <span className="text-[11px] tracking-[0.2em] uppercase text-lime font-medium">
+                Ingeniero White, Buenos Aires
+              </span>
+            </div>
+
+            <h1 className="font-display text-text-hi text-[clamp(44px,8vw,88px)] leading-[0.95] uppercase tracking-[0.02em] mb-6">
+              ENTRENÁ<br />
+              <span className="text-lime">TU MEJOR</span><br />
+              VERSIÓN
+            </h1>
+
+            <p className="text-text-muted text-base md:text-lg max-w-[420px] mb-10 leading-relaxed">
+              Clases de funcional, pesas, cross training y movilidad. Reservá tu turno desde la app.
+            </p>
+
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={onGoToApp}
+                className="inline-flex items-center gap-2 px-8 py-4 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-[3px] hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all duration-300 hover:-translate-y-0.5"
+              >
+                Reservar mi clase
+                <ArrowRight size={16} />
+              </button>
+              <a
+                href="https://www.instagram.com/oz.entrenamiento/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-8 py-4 text-[12px] font-semibold tracking-[0.08em] uppercase border border-border text-text-hi rounded-[3px] hover:border-text-muted transition-all duration-300"
+              >
+                <InstagramIcon size={16} />
+                Instagram
+              </a>
+            </div>
           </div>
-
-          {/* Headline */}
-          <h1
-            className="font-display text-text-hi leading-none mb-8"
-            style={{ fontSize: "clamp(52px, 10vw, 100px)", letterSpacing: "0.04em" }}
-          >
-            ENTRENÁ<br />
-            <span className="text-lime">TU MEJOR</span><br />
-            VERSIÓN
-          </h1>
-
-          {/* Glowing line */}
-          <div className="glow-line w-32 mx-auto my-8" />
-
-          {/* Subtitle */}
-          <p className="font-body text-text-mid text-base sm:text-lg max-w-lg mx-auto mb-12 leading-relaxed">
-            Clases de funcional, pesas, cross training y movilidad con coaches profesionales. Reservá tu turno desde la app.
-          </p>
-
-          {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={onGoToApp}
-              className="flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold bg-lime text-bg hover:shadow-glow-lime transition-all hover:scale-105 text-sm"
-            >
-              RESERVAR MI CLASE
-              <ArrowRight size={18} />
-            </button>
-            <a
-              href="https://www.instagram.com/oz.entrenamiento/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2.5 px-8 py-4 rounded-xl font-semibold text-text-hi border border-border bg-surface/60 backdrop-blur-sm hover:border-text-muted transition-all hover:scale-105 text-sm"
-            >
-              <InstagramIcon size={18} />
-              @oz.entrenamiento
-            </a>
-          </div>
-
-          {/* Stats */}
-          <div className="flex items-center justify-center gap-12 mt-20">
-            {[
-              { value: "12+", label: "CLASES / SEMANA" },
-              { value: "2", label: "COACHES" },
-              { value: "4", label: "ACTIVIDADES" },
-            ].map((stat, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <span className="font-display text-lime stat-glow" style={{ fontSize: "clamp(36px, 5vw, 52px)" }}>
-                  {stat.value}
-                </span>
-                <span className="text-[10px] font-mono text-text-muted tracking-wider mt-1.5">{stat.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
-          <span className="text-[10px] font-mono text-text-muted tracking-widest">SCROLL</span>
-          <ChevronDown size={16} className="text-text-muted animate-bounce" />
         </div>
       </section>
 
       {/* Actividades */}
-      <section id="actividades" ref={activitiesRef} className={`px-4 sm:px-6 py-24 sm:py-32 max-w-6xl mx-auto ${activitiesIn ? "animate-fade" : "opacity-0"}`}>
-        <div className="text-center mb-16">
-          <SectionLabel>ACTIVIDADES</SectionLabel>
-          <SectionTitle>ELEGÍ TU ENTRENAMIENTO</SectionTitle>
-        </div>
+      <section id="actividades" className="py-20 md:py-32 bg-surface">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+          <div className="mb-12 md:mb-16">
+            <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-3 block font-medium">
+              Actividades
+            </span>
+            <h2 className="font-display text-text-hi text-[clamp(28px,4vw,44px)] uppercase tracking-[0.02em]">
+              Nuestros servicios
+            </h2>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {ACTIVITIES.map((act) => {
-            const Icon = act.icon;
-            return (
-              <GlassCard key={act.name} hoverable className="overflow-hidden">
-                {/* Activity image */}
-                <div className="relative h-44 overflow-hidden">
-                  <img
-                    src={act.image}
-                    alt={act.name}
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-bg/90 via-bg/40 to-transparent" />
-                  <div className="absolute bottom-4 left-5 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-lime/20 border border-lime/30 flex items-center justify-center backdrop-blur-sm">
-                      <Icon size={20} className="text-lime" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {ACTIVITIES.map((act) => {
+              const Icon = act.icon;
+              return (
+                <div
+                  key={act.name}
+                  className="group bg-bg border border-border rounded-lg overflow-hidden hover:border-lime/40 transition-all duration-500"
+                >
+                  <div className="relative h-44 overflow-hidden">
+                    <img
+                      src={act.image}
+                      alt={act.name}
+                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <div className="w-9 h-9 rounded bg-bg/80 backdrop-blur-sm border border-border flex items-center justify-center">
+                        <Icon size={16} className="text-lime" />
+                      </div>
                     </div>
-                    <h3 className="font-display text-text-hi text-2xl tracking-wide">{act.name}</h3>
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-display text-text-hi text-xl uppercase tracking-wide mb-2">
+                      {act.name}
+                    </h3>
+                    <p className="text-text-muted text-sm leading-relaxed mb-4">
+                      {act.desc}
+                    </p>
+                    <div className="flex items-center justify-between text-[10px] tracking-wider uppercase text-text-muted pt-3 border-t border-border">
+                      <span>{act.coach}</span>
+                      <span className="text-lime-dim">{act.schedule.split(" ").slice(0, 3).join(" ")}</span>
+                    </div>
                   </div>
                 </div>
-                {/* Content */}
-                <div className="p-5">
-                  <p className="font-body text-text-mid text-sm leading-relaxed">{act.desc}</p>
-                  <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
-                    <span className="text-[11px] font-mono text-text-muted">COACH: {act.coach.toUpperCase()}</span>
-                    <span className="text-[11px] font-mono text-lime-dim">{act.schedule}</span>
-                  </div>
-                </div>
-              </GlassCard>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="max-w-6xl mx-auto px-4"><div className="glow-line" /></div>
-
       {/* Planes */}
-      <section id="planes" ref={plansRef} className={`px-4 sm:px-6 py-24 sm:py-32 section-alt ${plansIn ? "animate-fade" : "opacity-0"}`}>
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <SectionLabel>PLANES</SectionLabel>
-            <SectionTitle>ELIGÍ TU PLAN</SectionTitle>
+      <section id="planes" className="py-20 md:py-32">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+          <div className="mb-12 md:mb-16">
+            <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-3 block font-medium">
+              Planes
+            </span>
+            <h2 className="font-display text-text-hi text-[clamp(28px,4vw,44px)] uppercase tracking-[0.02em]">
+              Elegí tu plan
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl">
             {PLANS.map((plan) => (
-              <GlassCard
+              <div
                 key={plan.name}
-                hoverable
-                glow={plan.popular}
-                className={`p-7 flex flex-col relative ${plan.popular ? "ring-1 ring-lime/30" : ""}`}
+                className={`relative bg-bg border rounded-lg p-6 md:p-8 flex flex-col ${
+                  plan.popular
+                    ? "border-lime/50 shadow-[0_0_30px_rgba(212,255,61,0.08)]"
+                    : "border-border hover:border-border/80"
+                } transition-all duration-500`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-lime text-bg text-[10px] font-mono font-bold tracking-wider">
-                    MÁS POPULAR
+                  <div className="absolute -top-3 left-6 px-3 py-1 bg-lime text-bg text-[10px] font-semibold tracking-wider uppercase rounded-[2px]">
+                    Popular
                   </div>
                 )}
-                <h3 className="font-display text-text-hi text-2xl tracking-wide">{plan.name}</h3>
-                <div className="flex items-baseline gap-1.5 mt-4 mb-5">
-                  <span className="font-display text-lime" style={{ fontSize: "clamp(36px, 4vw, 48px)" }}>
-                    ${plan.price}
+                <h3 className="font-display text-text-hi text-2xl uppercase tracking-wide">
+                  {plan.name}
+                </h3>
+                <div className="flex items-baseline gap-1 mt-4 mb-6">
+                  <span className="text-text-muted text-lg">$</span>
+                  <span className="font-display text-lime text-[clamp(32px,4vw,44px)] leading-none">
+                    {plan.price}
                   </span>
-                  <span className="text-xs font-mono text-text-muted">/mes</span>
+                  <span className="text-text-muted text-sm">/mes</span>
                 </div>
-                <div className="flex flex-col gap-2.5 mb-8 flex-1">
+                <div className="flex flex-col gap-3 mb-8 flex-1">
                   {plan.features.map((f) => (
-                    <div key={f} className="flex items-center gap-2.5">
+                    <div key={f} className="flex items-center gap-3">
                       <Check size={14} className="text-lime shrink-0" />
-                      <span className="font-body text-text-mid text-sm">{f}</span>
+                      <span className="text-text-mid text-sm">{f}</span>
                     </div>
                   ))}
                 </div>
                 <button
                   onClick={onGoToApp}
-                  className={`w-full py-3.5 rounded-xl text-center font-bold transition-all hover:scale-[1.02] text-sm ${
+                  className={`w-full py-3.5 text-[12px] font-semibold tracking-[0.08em] uppercase rounded-[3px] transition-all duration-300 ${
                     plan.popular
-                      ? "bg-lime text-bg hover:shadow-glow-lime"
-                      : "border border-lime-dim text-lime hover:bg-lime/10"
+                      ? "bg-lime text-bg hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)]"
+                      : "border border-lime-dim text-lime hover:bg-lime/5"
                   }`}
                 >
-                  EMPEZAR AHORA
+                  Empezar ahora
                 </button>
-              </GlassCard>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="max-w-6xl mx-auto px-4"><div className="glow-line" /></div>
-
       {/* Coaches */}
-      <section id="coaches" ref={coachesRef} className={`px-4 sm:px-6 py-24 sm:py-32 max-w-6xl mx-auto ${coachesIn ? "animate-fade" : "opacity-0"}`}>
-        <div className="text-center mb-16">
-          <SectionLabel>EQUIPO</SectionLabel>
-          <SectionTitle>NUESTROS COACHES</SectionTitle>
-        </div>
+      <section id="coaches" className="py-20 md:py-32 bg-surface">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+          <div className="mb-12 md:mb-16">
+            <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-3 block font-medium">
+              Equipo
+            </span>
+            <h2 className="font-display text-text-hi text-[clamp(28px,4vw,44px)] uppercase tracking-[0.02em]">
+              Nuestros coaches
+            </h2>
+          </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 max-w-2xl mx-auto">
-          {COACHES.map((c) => (
-            <GlassCard key={c.name} hoverable className="flex items-center gap-5 px-8 py-6 w-full sm:w-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
+            {COACHES.map((c) => (
               <div
-                className="w-16 h-16 rounded-full flex items-center justify-center font-display text-2xl text-bg shrink-0"
-                style={{ backgroundColor: c.color }}
+                key={c.name}
+                className="bg-bg border border-border rounded-lg p-6 flex items-center gap-5 hover:border-lime/30 transition-all duration-500"
               >
-                {c.initials}
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center font-display text-xl text-bg shrink-0"
+                  style={{ backgroundColor: c.color }}
+                >
+                  {c.initials}
+                </div>
+                <div>
+                  <h3 className="font-display text-text-hi text-xl uppercase tracking-wide">
+                    {c.name}
+                  </h3>
+                  <p className="text-text-muted text-xs tracking-wider uppercase mt-1">
+                    {c.specialty}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-display text-text-hi text-xl tracking-wide">{c.name}</h3>
-                <p className="text-xs font-mono text-text-muted mt-1">{c.specialty}</p>
-              </div>
-            </GlassCard>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* CTA Final */}
-      <section ref={ctaRef} className={`px-4 sm:px-6 py-24 sm:py-32 text-center hero-gradient ${ctaIn ? "animate-fade" : "opacity-0"}`}>
-        <h2
-          className="font-display text-text-hi tracking-wide"
-          style={{ fontSize: "clamp(32px, 5vw, 56px)" }}
-        >
-          ¿LISTO PARA <span className="text-lime">ENTRENAR</span>?
-        </h2>
-        <p className="font-body text-text-mid text-base sm:text-lg max-w-md mx-auto mt-5 mb-10 leading-relaxed">
-          Reservá tu primera clase gratis y conocé el gym.
-        </p>
-        <button
-          onClick={onGoToApp}
-          className="inline-flex items-center gap-2.5 px-10 py-4 rounded-xl font-bold bg-lime text-bg hover:shadow-glow-lime transition-all hover:scale-105"
-        >
-          RESERVAR AHORA
-          <ArrowRight size={20} />
-        </button>
+      {/* CTA */}
+      <section className="py-16 md:py-24 text-center">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+          <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-4 block font-medium">
+            Reservá en segundos
+          </span>
+          <h2 className="font-display text-text-hi text-[clamp(28px,5vw,48px)] uppercase tracking-[0.02em] mb-4">
+            ¿Listo para <span className="text-lime">entrenar</span>?
+          </h2>
+          <p className="text-text-muted max-w-[400px] mx-auto mb-8 text-sm md:text-base">
+            Primera clase gratis. Confirmación inmediata por la app.
+          </p>
+          <button
+            onClick={onGoToApp}
+            className="inline-flex items-center gap-2 px-8 py-4 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-[3px] hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all duration-300 hover:-translate-y-0.5"
+          >
+            Reservar ahora
+            <ArrowRight size={16} />
+          </button>
+        </div>
       </section>
 
-      {/* Footer con Ubicación integrada */}
-      <footer className="border-t border-border">
-        {/* Location info */}
-        <div className="px-4 sm:px-6 py-12 section-alt">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              {/* Left: Info */}
-              <div className="text-center md:text-left">
-                <div className="flex items-center gap-3 justify-center md:justify-start mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-lime/10 border border-lime/20 flex items-center justify-center">
-                    <MapPin size={20} className="text-lime" />
-                  </div>
-                  <div>
-                    <p className="font-body text-text-hi font-semibold">OZ Entrenamiento</p>
-                    <p className="font-mono text-text-muted text-xs">Ingeniero White, Buenos Aires</p>
-                  </div>
+      {/* Ubicación */}
+      <section id="ubicacion" className="py-16 md:py-24 bg-surface border-t border-border">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div>
+              <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-3 block font-medium">
+                Ubicación
+              </span>
+              <h2 className="font-display text-text-hi text-[clamp(24px,3vw,36px)] uppercase tracking-[0.02em] mb-6">
+                Encontranos en
+              </h2>
+              <div className="flex items-start gap-3 mb-4">
+                <MapPin size={16} className="text-lime mt-1 shrink-0" />
+                <div>
+                  <p className="text-text-hi font-medium">OZ Entrenamiento</p>
+                  <p className="text-text-muted text-sm">Ingeniero White, Buenos Aires</p>
                 </div>
-                <div className="flex items-center gap-2 text-text-muted justify-center md:justify-start mb-4">
-                  <Clock size={14} />
-                  <span className="text-xs font-mono">Lun - Vie: 07:00 a 21:00</span>
-                </div>
-                <a
-                  href="https://www.google.com/maps/place/OZ+Entrenamiento/@-38.7793,-62.2585,17z"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-lime border border-lime-dim hover:bg-lime/10 transition-all"
-                >
-                  <MapPin size={14} />
-                  Cómo llegar
-                </a>
               </div>
-
-              {/* Right: Map embed */}
-              <div className="rounded-xl overflow-hidden border border-border h-48 md:h-56">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3110.0!2d-62.2585!3d-38.7793!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzfCsDQ2JzQ1LjQiUyA2MsKwMTUnMzAuNiJX!5e0!3m2!1ses!2sar!4v1"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0, filter: "grayscale(0.6) contrast(1.1) brightness(0.8)" }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Ubicación OZ Entrenamiento"
-                />
+              <div className="flex items-center gap-3 mb-6">
+                <Clock size={16} className="text-lime shrink-0" />
+                <span className="text-text-muted text-sm">Lun - Vie: 07:00 a 21:00</span>
               </div>
+              <a
+                href="https://www.google.com/maps/place/OZ+Entrenamiento/@-38.782176,-62.278327,17z"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 text-[12px] font-semibold tracking-[0.06em] uppercase border border-lime-dim text-lime rounded-[3px] hover:bg-lime/5 transition-all duration-300"
+              >
+                Cómo llegar
+                <ArrowRight size={14} />
+              </a>
+            </div>
+            <div className="rounded-lg overflow-hidden border border-border h-64 md:h-80">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10189.126371122411!2d-62.278326847718574!3d-38.78217602091141!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95edbd00060bd291%3A0xb0ebdf63b216010e!2sOz%20Entrenamiento!5e1!3m2!1ses-419!2sar!4v1783733895894!5m2!1ses-419!2sar"
+                width="100%"
+                height="100%"
+                style={{ border: 0, filter: "grayscale(0.7) contrast(1.05) brightness(0.85)" }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Ubicación OZ Entrenamiento"
+              />
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Bottom bar */}
-        <div className="px-4 sm:px-6 py-6 bg-bg">
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-6 h-6 rounded-md bg-lime flex items-center justify-center">
-                <Dumbbell size={12} className="text-bg" />
+      {/* Footer */}
+      <footer className="py-10 md:py-14 border-t border-border">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-8 pb-8 border-b border-border">
+            <div className="max-w-[280px]">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-7 h-7 rounded bg-lime flex items-center justify-center">
+                  <Dumbbell size={14} className="text-bg" />
+                </div>
+                <span className="font-display text-text-hi text-sm tracking-[0.1em]">
+                  OZ ENTRENAMIENTO
+                </span>
               </div>
-              <span className="font-display text-text-hi text-sm tracking-wider">OZ ENTRENAMIENTO</span>
+              <p className="text-text-muted text-[13px] leading-relaxed">
+                Funcional, pesas y cross training en Ingeniero White.
+              </p>
             </div>
-            <p className="text-[11px] font-mono text-text-muted">
-              &copy; {new Date().getFullYear()} OZ Entrenamiento &middot; Ingeniero White
-            </p>
-            <a
-              href="https://www.instagram.com/oz.entrenamiento/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-text-muted hover:text-lime transition-colors"
-              aria-label="Instagram"
-            >
-              <InstagramIcon size={18} />
-            </a>
+            <div className="flex gap-8">
+              <a href="#actividades" className="text-[12px] text-text-muted hover:text-text-hi transition-colors uppercase tracking-wider">
+                Actividades
+              </a>
+              <a href="#planes" className="text-[12px] text-text-muted hover:text-text-hi transition-colors uppercase tracking-wider">
+                Planes
+              </a>
+              <a
+                href="https://www.instagram.com/oz.entrenamiento/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[12px] text-text-muted hover:text-text-hi transition-colors uppercase tracking-wider"
+              >
+                Instagram
+              </a>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3 pt-6 text-[11px] text-text-muted">
+            <span>© {new Date().getFullYear()} OZ Entrenamiento</span>
+            <span>Ingeniero White, Buenos Aires</span>
           </div>
         </div>
       </footer>

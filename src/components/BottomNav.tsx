@@ -1,4 +1,3 @@
-import { COLORS, FONTS } from "@/lib/utils";
 import { useUIStore } from "@/stores/uiStore";
 import type { LucideIcon } from "lucide-react";
 
@@ -16,10 +15,7 @@ export function BottomNav({ items }: BottomNavProps) {
   const { activeTab, setActiveTab } = useUIStore();
 
   return (
-    <div
-      className="flex items-center justify-around px-2 py-2"
-      style={{ borderTop: `1px solid ${COLORS.border}`, backgroundColor: COLORS.surface }}
-    >
+    <div className="flex items-center justify-around px-2 py-2 bg-surface border-t border-border">
       {items.map((item) => {
         const Icon = item.icon;
         const active = activeTab === item.id;
@@ -29,18 +25,15 @@ export function BottomNav({ items }: BottomNavProps) {
             onClick={() => setActiveTab(item.id)}
             aria-label={item.label}
             aria-current={active ? "page" : undefined}
-            className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${
+              active
+                ? "text-lime bg-lime/5"
+                : "text-text-muted hover:text-text-hi"
+            }`}
           >
-            <Icon size={20} color={active ? COLORS.lime : COLORS.textMuted} strokeWidth={active ? 2.5 : 2} />
-            <span
-              style={{
-                fontFamily: FONTS.mono,
-                color: active ? COLORS.lime : COLORS.textMuted,
-                fontSize: 10,
-                letterSpacing: 0.5,
-              }}
-            >
-              {item.label.toUpperCase()}
+            <Icon size={20} strokeWidth={active ? 2.5 : 1.8} />
+            <span className="text-[10px] font-mono tracking-wider uppercase">
+              {item.label}
             </span>
           </button>
         );

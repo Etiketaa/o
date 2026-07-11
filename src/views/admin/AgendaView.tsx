@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { DIAS } from "@/types";
-import type { DiaSemana, TurnoConReservas } from "@/types";
-import { COLORS, FONTS } from "@/lib/utils";
+import type { TurnoConReservas } from "@/types";
 import { PlateMeter, Pill, Modal } from "@/components";
 import { useTurnosStore } from "@/stores/turnosStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -19,60 +18,75 @@ export function AgendaView() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex gap-2 overflow-x-auto px-4 pt-4 pb-3" style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+      {/* Day selector */}
+      <div className="flex gap-2 overflow-x-auto px-6 pt-6 pb-4 border-b border-border">
         {DIAS.map((d) => (
           <Pill key={d} active={d === selectedDay} onClick={() => setSelectedDay(d)}>
             {d}
           </Pill>
         ))}
       </div>
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
-        {list.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 gap-2" style={{ color: COLORS.textMuted }}>
-            <Calendar size={28} strokeWidth={1.5} />
-            <p style={{ fontFamily: FONTS.body }} className="text-sm">Sin turnos cargados este día</p>
-          </div>
-        )}
-        {list.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setSelectedTurno(t)}
-            className="text-left rounded-lg p-4 flex items-center justify-between transition-all hover:opacity-90"
-            style={{ backgroundColor: COLORS.surface, border: `1px solid ${COLORS.border}` }}
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex flex-col items-center justify-center" style={{ width: 52 }}>
-                <span style={{ fontFamily: FONTS.display, fontSize: 22, color: COLORS.textHi, letterSpacing: 1 }}>
-                  {t.hora}
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span style={{ fontFamily: FONTS.body, fontWeight: 700, color: COLORS.textHi }}>{t.actividad}</span>
-                <span style={{ fontFamily: FONTS.body, color: COLORS.textMuted }} className="text-xs">
-                  Coach {t.coach}
-                </span>
-              </div>
+
+      {/* Turnos grid */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-6xl mx-auto">
+          {list.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-text-muted">
+              <Calendar size={32} strokeWidth={1.5} />
+              <p className="text-sm">Sin turnos cargados este día</p>
             </div>
-            <PlateMeter ocupados={t.ocupados} total={t.cupo} />
-          </button>
-        ))}
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {list.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setSelectedTurno(t)}
+                className="text-left bg-surface border border-border rounded-xl p-5 flex flex-col gap-4 hover:border-lime/30 transition-all"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-display text-text-hi text-2xl tracking-wide block">
+                      {t.hora}
+                    </span>
+                    <span className="text-[10px] font-mono text-text-muted uppercase tracking-wider">
+                      Coach {t.coach}
+                    </span>
+                  </div>
+                  <PlateMeter ocupados={t.ocupados} total={t.cupo} />
+                </div>
+                <div className="pt-3 border-t border-border">
+                  <span className="font-body font-bold text-text-hi text-sm">
+                    {t.actividad}
+                  </span>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] font-mono text-text-muted">
+                      {t.ocupados}/{t.cupo} inscriptos
+                    </span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
+      {/* Modal */}
       <Modal open={!!selectedTurno} onClose={() => setSelectedTurno(null)}>
         {selectedTurno && (
           <div className="flex flex-col gap-4">
             <div>
-              <p style={{ fontFamily: FONTS.mono, color: COLORS.limeDim }} className="text-xs">
+              <p className="text-xs font-mono text-lime-dim mb-1">
                 {selectedTurno.hora} · Coach {selectedTurno.coach}
               </p>
-              <h3 style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: 26, letterSpacing: 1 }}>
+              <h3 className="font-display text-text-hi text-2xl tracking-wide">
                 {selectedTurno.actividad}
               </h3>
             </div>
             <PlateMeter ocupados={selectedTurno.ocupados} total={selectedTurno.cupo} />
-            <div className="flex-1 overflow-y-auto flex flex-col gap-2">
+            <div className="flex-1 overflow-y-auto flex flex-col gap-2 max-h-60">
               {selectedTurno.inscritos.length === 0 && (
-                <p style={{ fontFamily: FONTS.body, color: COLORS.textMuted }} className="text-sm py-4 text-center">
+                <p className="text-text-muted text-sm py-4 text-center">
                   Nadie anotado todavía
                 </p>
               )}
@@ -80,15 +94,14 @@ export function AgendaView() {
                 const al = alumnosById[id];
                 if (!al) return null;
                 return (
-                  <div key={id} className="flex items-center justify-between py-2" style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                    <span style={{ fontFamily: FONTS.body, color: COLORS.textHi }} className="text-sm">{al.nombre}</span>
+                  <div key={id} className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+                    <span className="text-text-hi text-sm">{al.nombre}</span>
                     <span
-                      className="text-xs px-2 py-0.5 rounded-full"
-                      style={{
-                        fontFamily: FONTS.mono,
-                        color: al.estado === "activo" ? COLORS.lime : COLORS.danger,
-                        border: `1px solid ${al.estado === "activo" ? COLORS.limeDim : COLORS.danger}`,
-                      }}
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                        al.estado === "activo"
+                          ? "text-lime border border-lime-dim"
+                          : "text-danger border border-danger"
+                      }`}
                     >
                       {al.estado === "activo" ? "ACTIVO" : "VENCIDO"}
                     </span>
