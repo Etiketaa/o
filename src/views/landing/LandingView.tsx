@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
   Dumbbell,
-  Clock,
-  MapPin,
-  ChevronDown,
   Zap,
   Heart,
   ArrowRight,
@@ -11,6 +9,7 @@ import {
   X,
   Target,
   Check,
+  ArrowDown,
 } from "lucide-react";
 
 function InstagramIcon({ size = 18, className = "" }: { size?: number; className?: string }) {
@@ -69,9 +68,34 @@ const COACHES = [
   { name: "Vale", specialty: "Pesas & Movilidad", initials: "VA", color: "#8FA83A" },
 ];
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
+};
+
+const fadeInLeft = {
+  hidden: { opacity: 0, x: -30 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.3,
+    },
+  },
+};
+
 export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { scrollY } = useScroll();
+  const heroOpacity = useTransform(scrollY, [0, 300], [1, 0.8]);
+  const heroScale = useTransform(scrollY, [0, 300], [1, 1.05]);
+  const scrollIndicatorOpacity = useTransform(scrollY, [0, 100], [1, 0]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -82,14 +106,19 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
   return (
     <div className="min-h-screen overflow-y-auto bg-bg">
       {/* Navbar */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "bg-bg/95 backdrop-blur-xl border-b border-border" : "bg-bg/80 backdrop-blur-md"
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled
+            ? "bg-bg/80 backdrop-blur-2xl border-b border-white/[0.06] shadow-[0_4px_30px_rgba(0,0,0,0.3)] py-3"
+            : "bg-transparent py-5"
         }`}
       >
-        <div className="max-w-[1200px] mx-auto px-6 md:px-8 flex items-center justify-between h-16 md:h-20">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 flex items-center justify-between">
           <a href="#" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-lg bg-lime flex items-center justify-center transition-transform group-hover:scale-105">
+            <div className="w-10 h-10 rounded-xl bg-lime flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(212,255,61,0.4)]">
               <Dumbbell size={20} className="text-bg" />
             </div>
             <div className="hidden sm:block">
@@ -107,345 +136,423 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
               { href: "#actividades", label: "Actividades" },
               { href: "#planes", label: "Planes" },
               { href: "#coaches", label: "Coaches" },
-              { href: "#ubicacion", label: "Ubicación" },
             ].map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="text-[13px] tracking-[0.06em] text-text-muted hover:text-text-hi transition-colors duration-300"
+                className="relative text-[13px] tracking-[0.06em] text-text-muted hover:text-text-hi transition-colors duration-300 group"
               >
                 {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-lime transition-all duration-300 group-hover:w-full" />
               </a>
             ))}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(212,255,61,0.3)" }}
+              whileTap={{ scale: 0.98 }}
               onClick={onGoToApp}
-              className="px-6 py-3 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-[3px] hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all duration-300 hover:-translate-y-0.5"
+              className="px-7 py-3 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-xl hover:-translate-y-0.5 transition-all duration-300"
             >
               Reservar
-            </button>
+            </motion.button>
           </div>
 
           <button
-            className="md:hidden p-2 text-text-hi"
+            className="md:hidden p-2 text-text-hi hover:text-lime transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
           >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
-        {menuOpen && (
-          <div className="md:hidden px-6 pb-6 pt-2 flex flex-col gap-1 bg-bg/98 backdrop-blur-xl border-b border-border">
-            {[
-              { href: "#actividades", label: "Actividades" },
-              { href: "#planes", label: "Planes" },
-              { href: "#coaches", label: "Coaches" },
-              { href: "#ubicacion", label: "Ubicación" },
-            ].map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={() => setMenuOpen(false)}
-                className="text-sm text-text-muted hover:text-text-hi py-3 px-2 transition-colors"
-              >
-                {item.label}
-              </a>
-            ))}
-            <button
-              onClick={() => { setMenuOpen(false); onGoToApp(); }}
-              className="w-full py-3.5 mt-2 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-[3px]"
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden overflow-hidden bg-bg/95 backdrop-blur-2xl border-b border-white/[0.06]"
             >
-              Reservar Clase
-            </button>
-          </div>
-        )}
-      </nav>
+              <div className="px-6 pb-8 pt-4 flex flex-col gap-2">
+                {[
+                  { href: "#actividades", label: "Actividades" },
+                  { href: "#planes", label: "Planes" },
+                  { href: "#coaches", label: "Coaches" },
+                ].map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="text-sm text-text-muted hover:text-text-hi py-3 px-2 transition-colors border-b border-white/[0.04]"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => { setMenuOpen(false); onGoToApp(); }}
+                  className="w-full py-4 mt-3 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-xl"
+                >
+                  Reservar Clase
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.nav>
 
       {/* Hero */}
-      <section className="relative min-h-[90vh] md:min-h-screen flex items-center">
+      <motion.section
+        style={{ opacity: heroOpacity, scale: heroScale }}
+        className="relative min-h-[100vh] md:min-h-screen flex items-center overflow-hidden"
+      >
+        {/* Background layers */}
+        <div className="absolute inset-0">
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              backgroundImage: "url(https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&auto=format&fit=crop)",
+              backgroundSize: "cover",
+              backgroundPosition: "center 30%",
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/85 to-bg/50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg" />
+        </div>
+
+        {/* Glow effect */}
+        <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-lime/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-lime/3 rounded-full blur-[100px] pointer-events-none" />
+
+        {/* Grid pattern */}
         <div
-          className="absolute inset-0 opacity-30"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: "url(https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&auto=format&fit=crop)",
-            backgroundSize: "cover",
-            backgroundPosition: "center 30%",
+            backgroundImage: `linear-gradient(rgba(212,255,61,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(212,255,61,0.1) 1px, transparent 1px)`,
+            backgroundSize: "60px 60px",
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/90 to-bg/60" />
 
-        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-6 md:px-8 pt-24 pb-16 md:pt-0">
-          <div className="max-w-[600px]">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-[1px] bg-lime" />
-              <span className="text-[11px] tracking-[0.2em] uppercase text-lime font-medium">
-                Ingeniero White, Buenos Aires
-              </span>
-            </div>
+        <div className="relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 pt-32 pb-20 md:pt-0 md:pb-0">
+          <div className="max-w-[680px]">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+            >
+              <motion.div variants={fadeInLeft} className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-[1px] bg-gradient-to-r from-lime to-transparent" />
+                <span className="text-[11px] tracking-[0.25em] uppercase text-lime font-medium">
+                  Ingeniero White, Buenos Aires
+                </span>
+              </motion.div>
 
-            <h1 className="font-display text-text-hi text-[clamp(44px,8vw,88px)] leading-[0.95] uppercase tracking-[0.02em] mb-6">
-              ENTRENÁ<br />
-              <span className="text-lime">TU MEJOR</span><br />
-              VERSIÓN
-            </h1>
-
-            <p className="text-text-muted text-base md:text-lg max-w-[420px] mb-10 leading-relaxed">
-              Clases de funcional, pesas, cross training y movilidad. Reservá tu turno desde la app.
-            </p>
-
-            <div className="flex flex-wrap gap-4">
-              <button
-                onClick={onGoToApp}
-                className="inline-flex items-center gap-2 px-8 py-4 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-[3px] hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all duration-300 hover:-translate-y-0.5"
+              <motion.h1
+                variants={fadeInUp}
+                className="font-display text-text-hi text-[clamp(52px,9vw,96px)] leading-[0.92] uppercase tracking-[0.02em] mb-8"
               >
-                Reservar mi clase
-                <ArrowRight size={16} />
-              </button>
-              <a
-                href="https://www.instagram.com/oz.entrenamiento/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-8 py-4 text-[12px] font-semibold tracking-[0.08em] uppercase border border-border text-text-hi rounded-[3px] hover:border-text-muted transition-all duration-300"
+                ENTRENÁ<br />
+                <span className="text-lime drop-shadow-[0_0_30px_rgba(212,255,61,0.3)]">TU MEJOR</span><br />
+                VERSIÓN
+              </motion.h1>
+
+              <motion.p
+                variants={fadeInUp}
+                className="text-text-mid text-lg md:text-xl max-w-[460px] mb-12 leading-relaxed"
               >
-                <InstagramIcon size={16} />
-                Instagram
-              </a>
-            </div>
+                Clases de funcional, pesas, cross training y movilidad. Reservá tu turno desde la app.
+              </motion.p>
+
+              <motion.div variants={fadeInUp} className="flex flex-wrap gap-5">
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(212,255,61,0.35)" }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={onGoToApp}
+                  className="group inline-flex items-center gap-3 px-10 py-5 text-[13px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-xl transition-all duration-300"
+                >
+                  Reservar mi clase
+                  <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
+                </motion.button>
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  href="https://www.instagram.com/oz.entrenamiento/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-10 py-5 text-[13px] font-semibold tracking-[0.08em] uppercase border border-white/10 text-text-hi rounded-xl hover:border-white/20 hover:bg-white/[0.03] transition-all duration-300"
+                >
+                  <InstagramIcon size={18} />
+                  Instagram
+                </motion.a>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
-      </section>
+
+        {/* Scroll indicator */}
+        <motion.div
+          style={{ opacity: scrollIndicatorOpacity }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+          <span className="text-[10px] tracking-[0.2em] uppercase text-text-muted">Scroll</span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ArrowDown size={16} className="text-lime/60" />
+          </motion.div>
+        </motion.div>
+      </motion.section>
 
       {/* Actividades */}
-      <section id="actividades" className="py-20 md:py-32 bg-surface">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
-          <div className="mb-12 md:mb-16">
-            <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-3 block font-medium">
+      <section id="actividades" className="py-24 md:py-40 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-bg via-surface/50 to-bg pointer-events-none" />
+        <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="mb-16 md:mb-20"
+          >
+            <motion.span variants={fadeInUp} className="text-[11px] tracking-[0.25em] uppercase text-lime mb-4 block font-medium">
               Actividades
-            </span>
-            <h2 className="font-display text-text-hi text-[clamp(28px,4vw,44px)] uppercase tracking-[0.02em]">
+            </motion.span>
+            <motion.h2 variants={fadeInUp} className="font-display text-text-hi text-[clamp(32px,5vw,52px)] uppercase tracking-[0.02em]">
               Nuestros servicios
-            </h2>
-          </div>
+            </motion.h2>
+          </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
             {ACTIVITIES.map((act) => {
               const Icon = act.icon;
               return (
-                <div
+                <motion.div
                   key={act.name}
-                  className="group bg-bg border border-border rounded-lg overflow-hidden hover:border-lime/40 transition-all duration-500"
+                  variants={fadeInUp}
+                  whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                  className="group relative bg-surface/50 border border-white/[0.06] rounded-2xl overflow-hidden hover:border-lime/30 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
                 >
-                  <div className="relative h-44 overflow-hidden">
+                  <div className="relative h-52 overflow-hidden">
                     <img
                       src={act.image}
                       alt={act.name}
-                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                      className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
                     <div className="absolute top-4 left-4">
-                      <div className="w-9 h-9 rounded bg-bg/80 backdrop-blur-sm border border-border flex items-center justify-center">
-                        <Icon size={16} className="text-lime" />
+                      <div className="w-10 h-10 rounded-xl bg-bg/60 backdrop-blur-xl border border-white/[0.08] flex items-center justify-center">
+                        <Icon size={18} className="text-lime" />
                       </div>
                     </div>
                   </div>
-                  <div className="p-5">
-                    <h3 className="font-display text-text-hi text-xl uppercase tracking-wide mb-2">
+                  <div className="p-6">
+                    <h3 className="font-display text-text-hi text-2xl uppercase tracking-wide mb-3">
                       {act.name}
                     </h3>
-                    <p className="text-text-muted text-sm leading-relaxed mb-4">
+                    <p className="text-text-muted text-sm leading-relaxed mb-5">
                       {act.desc}
                     </p>
-                    <div className="flex items-center justify-between text-[10px] tracking-wider uppercase text-text-muted pt-3 border-t border-border">
+                    <div className="flex items-center justify-between text-[10px] tracking-wider uppercase text-text-muted pt-4 border-t border-white/[0.06]">
                       <span>{act.coach}</span>
                       <span className="text-lime-dim">{act.schedule.split(" ").slice(0, 3).join(" ")}</span>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Planes */}
-      <section id="planes" className="py-20 md:py-32">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
-          <div className="mb-12 md:mb-16">
-            <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-3 block font-medium">
+      <section id="planes" className="py-24 md:py-40 relative">
+        <div className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-lime/[0.02] rounded-full blur-[150px] pointer-events-none" />
+        </div>
+        <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="mb-16 md:mb-20 text-center"
+          >
+            <motion.span variants={fadeInUp} className="text-[11px] tracking-[0.25em] uppercase text-lime mb-4 block font-medium">
               Planes
-            </span>
-            <h2 className="font-display text-text-hi text-[clamp(28px,4vw,44px)] uppercase tracking-[0.02em]">
+            </motion.span>
+            <motion.h2 variants={fadeInUp} className="font-display text-text-hi text-[clamp(32px,5vw,52px)] uppercase tracking-[0.02em]">
               Elegí tu plan
-            </h2>
-          </div>
+            </motion.h2>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto"
+          >
             {PLANS.map((plan) => (
-              <div
+              <motion.div
                 key={plan.name}
-                className={`relative bg-bg border rounded-lg p-6 md:p-8 flex flex-col ${
+                variants={fadeInUp}
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                className={`relative bg-surface/50 border rounded-3xl p-8 md:p-10 flex flex-col ${
                   plan.popular
-                    ? "border-lime/50 shadow-[0_0_30px_rgba(212,255,61,0.08)]"
-                    : "border-border hover:border-border/80"
+                    ? "border-lime/40 shadow-[0_0_60px_rgba(212,255,61,0.1)]"
+                    : "border-white/[0.06] hover:border-white/[0.12]"
                 } transition-all duration-500`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-6 px-3 py-1 bg-lime text-bg text-[10px] font-semibold tracking-wider uppercase rounded-[2px]">
+                  <div className="absolute -top-4 left-8 px-4 py-1.5 bg-lime text-bg text-[10px] font-bold tracking-[0.15em] uppercase rounded-lg shadow-[0_4px_20px_rgba(212,255,61,0.3)]">
                     Popular
                   </div>
                 )}
-                <h3 className="font-display text-text-hi text-2xl uppercase tracking-wide">
+                <h3 className="font-display text-text-hi text-3xl uppercase tracking-wide">
                   {plan.name}
                 </h3>
-                <div className="flex items-baseline gap-1 mt-4 mb-6">
-                  <span className="text-text-muted text-lg">$</span>
-                  <span className="font-display text-lime text-[clamp(32px,4vw,44px)] leading-none">
+                <div className="flex items-baseline gap-1.5 mt-6 mb-8">
+                  <span className="text-text-muted text-xl">$</span>
+                  <span className="font-display text-lime text-[clamp(40px,5vw,56px)] leading-none drop-shadow-[0_0_20px_rgba(212,255,61,0.2)]">
                     {plan.price}
                   </span>
-                  <span className="text-text-muted text-sm">/mes</span>
+                  <span className="text-text-muted text-base">/mes</span>
                 </div>
-                <div className="flex flex-col gap-3 mb-8 flex-1">
+                <div className="flex flex-col gap-4 mb-10 flex-1">
                   {plan.features.map((f) => (
-                    <div key={f} className="flex items-center gap-3">
-                      <Check size={14} className="text-lime shrink-0" />
-                      <span className="text-text-mid text-sm">{f}</span>
+                    <div key={f} className="flex items-center gap-4">
+                      <div className="w-5 h-5 rounded-full bg-lime/10 flex items-center justify-center shrink-0">
+                        <Check size={12} className="text-lime" />
+                      </div>
+                      <span className="text-text-mid text-sm leading-relaxed">{f}</span>
                     </div>
                   ))}
                 </div>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02, boxShadow: plan.popular ? "0 0 40px rgba(212,255,61,0.3)" : "0 0 20px rgba(212,255,61,0.1)" }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={onGoToApp}
-                  className={`w-full py-3.5 text-[12px] font-semibold tracking-[0.08em] uppercase rounded-[3px] transition-all duration-300 ${
+                  className={`w-full py-4 text-[12px] font-semibold tracking-[0.08em] uppercase rounded-xl transition-all duration-300 ${
                     plan.popular
-                      ? "bg-lime text-bg hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)]"
-                      : "border border-lime-dim text-lime hover:bg-lime/5"
+                      ? "bg-lime text-bg"
+                      : "border border-lime/30 text-lime hover:bg-lime/5"
                   }`}
                 >
                   Empezar ahora
-                </button>
-              </div>
+                </motion.button>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Coaches */}
-      <section id="coaches" className="py-20 md:py-32 bg-surface">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
-          <div className="mb-12 md:mb-16">
-            <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-3 block font-medium">
+      <section id="coaches" className="py-24 md:py-40 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-bg via-surface/50 to-bg pointer-events-none" />
+        <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="mb-16 md:mb-20"
+          >
+            <motion.span variants={fadeInUp} className="text-[11px] tracking-[0.25em] uppercase text-lime mb-4 block font-medium">
               Equipo
-            </span>
-            <h2 className="font-display text-text-hi text-[clamp(28px,4vw,44px)] uppercase tracking-[0.02em]">
+            </motion.span>
+            <motion.h2 variants={fadeInUp} className="font-display text-text-hi text-[clamp(32px,5vw,52px)] uppercase tracking-[0.02em]">
               Nuestros coaches
-            </h2>
-          </div>
+            </motion.h2>
+          </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl"
+          >
             {COACHES.map((c) => (
-              <div
+              <motion.div
                 key={c.name}
-                className="bg-bg border border-border rounded-lg p-6 flex items-center gap-5 hover:border-lime/30 transition-all duration-500"
+                variants={fadeInUp}
+                whileHover={{ y: -4, transition: { duration: 0.3 } }}
+                className="group bg-surface/50 border border-white/[0.06] rounded-2xl p-8 flex items-center gap-6 hover:border-lime/20 transition-all duration-500"
               >
                 <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center font-display text-xl text-bg shrink-0"
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center font-display text-2xl text-bg shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(212,255,61,0.2)]"
                   style={{ backgroundColor: c.color }}
                 >
                   {c.initials}
                 </div>
                 <div>
-                  <h3 className="font-display text-text-hi text-xl uppercase tracking-wide">
+                  <h3 className="font-display text-text-hi text-2xl uppercase tracking-wide">
                     {c.name}
                   </h3>
-                  <p className="text-text-muted text-xs tracking-wider uppercase mt-1">
+                  <p className="text-text-muted text-xs tracking-[0.1em] uppercase mt-2">
                     {c.specialty}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-16 md:py-24 text-center">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
-          <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-4 block font-medium">
-            Reservá en segundos
-          </span>
-          <h2 className="font-display text-text-hi text-[clamp(28px,5vw,48px)] uppercase tracking-[0.02em] mb-4">
-            ¿Listo para <span className="text-lime">entrenar</span>?
-          </h2>
-          <p className="text-text-muted max-w-[400px] mx-auto mb-8 text-sm md:text-base">
-            Primera clase gratis. Confirmación inmediata por la app.
-          </p>
-          <button
-            onClick={onGoToApp}
-            className="inline-flex items-center gap-2 px-8 py-4 text-[12px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-[3px] hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all duration-300 hover:-translate-y-0.5"
+      <section className="py-20 md:py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-bg to-surface/30 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-lime/[0.03] rounded-full blur-[120px] pointer-events-none" />
+        <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10 text-center">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
           >
-            Reservar ahora
-            <ArrowRight size={16} />
-          </button>
-        </div>
-      </section>
-
-      {/* Ubicación */}
-      <section id="ubicacion" className="py-16 md:py-24 bg-surface border-t border-border">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div>
-              <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-3 block font-medium">
-                Ubicación
-              </span>
-              <h2 className="font-display text-text-hi text-[clamp(24px,3vw,36px)] uppercase tracking-[0.02em] mb-6">
-                Encontranos en
-              </h2>
-              <div className="flex items-start gap-3 mb-4">
-                <MapPin size={16} className="text-lime mt-1 shrink-0" />
-                <div>
-                  <p className="text-text-hi font-medium">OZ Entrenamiento</p>
-                  <p className="text-text-muted text-sm">Ingeniero White, Buenos Aires</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 mb-6">
-                <Clock size={16} className="text-lime shrink-0" />
-                <span className="text-text-muted text-sm">Lun - Vie: 07:00 a 21:00</span>
-              </div>
-              <a
-                href="https://www.google.com/maps/place/OZ+Entrenamiento/@-38.782176,-62.278327,17z"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 text-[12px] font-semibold tracking-[0.06em] uppercase border border-lime-dim text-lime rounded-[3px] hover:bg-lime/5 transition-all duration-300"
+            <motion.span variants={fadeInUp} className="text-[11px] tracking-[0.25em] uppercase text-lime mb-5 block font-medium">
+              Reservá en segundos
+            </motion.span>
+            <motion.h2 variants={fadeInUp} className="font-display text-text-hi text-[clamp(36px,6vw,56px)] uppercase tracking-[0.02em] mb-6">
+              ¿Listo para <span className="text-lime drop-shadow-[0_0_30px_rgba(212,255,61,0.3)]">entrenar</span>?
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="text-text-mid max-w-[440px] mx-auto mb-10 text-base md:text-lg leading-relaxed">
+              Primera clase gratis. Confirmación inmediata por la app.
+            </motion.p>
+            <motion.div variants={fadeInUp}>
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: "0 0 50px rgba(212,255,61,0.35)" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onGoToApp}
+                className="group inline-flex items-center gap-3 px-10 py-5 text-[13px] font-semibold tracking-[0.08em] uppercase bg-lime text-bg rounded-xl transition-all duration-300"
               >
-                Cómo llegar
-                <ArrowRight size={14} />
-              </a>
-            </div>
-            <div className="rounded-lg overflow-hidden border border-border h-64 md:h-80">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10189.126371122411!2d-62.278326847718574!3d-38.78217602091141!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95edbd00060bd291%3A0xb0ebdf63b216010e!2sOz%20Entrenamiento!5e1!3m2!1ses-419!2sar!4v1783733895894!5m2!1ses-419!2sar"
-                width="100%"
-                height="100%"
-                style={{ border: 0, filter: "grayscale(0.7) contrast(1.05) brightness(0.85)" }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Ubicación OZ Entrenamiento"
-              />
-            </div>
-          </div>
+                Reservar ahora
+                <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </motion.button>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-10 md:py-14 border-t border-border">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-8 pb-8 border-b border-border">
-            <div className="max-w-[280px]">
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-7 h-7 rounded bg-lime flex items-center justify-center">
-                  <Dumbbell size={14} className="text-bg" />
+      <footer className="py-12 md:py-16 border-t border-white/[0.06]">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-10 pb-10 border-b border-white/[0.06]">
+            <div className="max-w-[320px]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-lime flex items-center justify-center">
+                  <Dumbbell size={16} className="text-bg" />
                 </div>
-                <span className="font-display text-text-hi text-sm tracking-[0.1em]">
+                <span className="font-display text-text-hi text-base tracking-[0.1em]">
                   OZ ENTRENAMIENTO
                 </span>
               </div>
@@ -453,24 +560,25 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
                 Funcional, pesas y cross training en Ingeniero White.
               </p>
             </div>
-            <div className="flex gap-8">
-              <a href="#actividades" className="text-[12px] text-text-muted hover:text-text-hi transition-colors uppercase tracking-wider">
-                Actividades
-              </a>
-              <a href="#planes" className="text-[12px] text-text-muted hover:text-text-hi transition-colors uppercase tracking-wider">
-                Planes
-              </a>
-              <a
-                href="https://www.instagram.com/oz.entrenamiento/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[12px] text-text-muted hover:text-text-hi transition-colors uppercase tracking-wider"
-              >
-                Instagram
-              </a>
+            <div className="flex gap-10">
+              {[
+                { href: "#actividades", label: "Actividades" },
+                { href: "#planes", label: "Planes" },
+                { href: "https://www.instagram.com/oz.entrenamiento/", label: "Instagram" },
+              ].map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target={item.href.startsWith("http") ? "_blank" : undefined}
+                  rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="text-[12px] text-text-muted hover:text-text-hi transition-colors uppercase tracking-wider"
+                >
+                  {item.label}
+                </a>
+              ))}
             </div>
           </div>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-3 pt-6 text-[11px] text-text-muted">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 text-[11px] text-text-muted">
             <span>© {new Date().getFullYear()} OZ Entrenamiento</span>
             <span>Ingeniero White, Buenos Aires</span>
           </div>

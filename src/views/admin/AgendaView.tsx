@@ -4,7 +4,7 @@ import type { TurnoConReservas } from "@/types";
 import { PlateMeter, Pill, Modal } from "@/components";
 import { useTurnosStore } from "@/stores/turnosStore";
 import { useUIStore } from "@/stores/uiStore";
-import { Calendar } from "lucide-react";
+import { Calendar, Repeat } from "lucide-react";
 
 export function AgendaView() {
   const { turnos, alumnos } = useTurnosStore();
@@ -56,9 +56,19 @@ export function AgendaView() {
                   <PlateMeter ocupados={t.ocupados} total={t.cupo} />
                 </div>
                 <div className="pt-3 border-t border-border">
-                  <span className="font-body font-bold text-text-hi text-sm">
-                    {t.actividad}
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-body font-bold text-text-hi text-sm">
+                      {t.actividad}
+                    </span>
+                    {t.fijos && t.fijos.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Repeat size={12} className="text-lime" />
+                        <span className="text-[10px] font-mono text-lime">
+                          {t.fijos.length} fijos
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] font-mono text-text-muted">
                       {t.ocupados}/{t.cupo} inscriptos
@@ -93,9 +103,15 @@ export function AgendaView() {
               {selectedTurno.inscritos.map((id) => {
                 const al = alumnosById[id];
                 if (!al) return null;
+                const esFijo = selectedTurno.fijos?.includes(id);
                 return (
                   <div key={id} className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
-                    <span className="text-text-hi text-sm">{al.nombre}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-text-hi text-sm">{al.nombre}</span>
+                      {esFijo && (
+                        <Repeat size={12} className="text-lime" aria-label="Turno fijo" />
+                      )}
+                    </div>
                     <span
                       className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
                         al.estado === "activo"

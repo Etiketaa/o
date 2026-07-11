@@ -35,6 +35,7 @@ export interface Reserva {
   alumno_id: string;
   fecha: string;
   estado: "activa" | "cancelada";
+  es_fijo: boolean;
   created_at: string;
 }
 
@@ -71,6 +72,14 @@ export interface Membresia {
 export interface TurnoConReservas extends Turno {
   inscritos: string[];
   ocupados: number;
+  fijos: string[];
+}
+
+export interface PlanActividad {
+  id: string;
+  plan: PlanType;
+  actividad: string;
+  created_at: string;
 }
 
 export interface DashboardStats {

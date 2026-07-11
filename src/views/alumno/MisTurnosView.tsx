@@ -1,16 +1,23 @@
+import { useEffect } from "react";
 import { DIAS } from "@/types";
 import { useTurnosStore } from "@/stores/turnosStore";
 import { useAuthStore } from "@/stores/authStore";
-import { CalendarCheck, X } from "lucide-react";
+import { CalendarCheck, X, Repeat } from "lucide-react";
 
 export function MisTurnosView() {
-  const { turnos, misReservas, cancelarReserva } = useTurnosStore();
+  const { turnos, misReservas, cancelarReserva, loadMisReservas } = useTurnosStore();
   const { user } = useAuthStore();
 
-  const items: Array<{ id: string; dia: string; hora: string; actividad: string; coach: string }> = [];
+  useEffect(() => {
+    if (user) {
+      loadMisReservas(user.id);
+    }
+  }, [user?.id]);
+
+  const items: Array<{ id: string; dia: string; hora: string; actividad: string; coach: string; es_fijo: boolean }> = [];
   DIAS.forEach((dia) => {
     (turnos[dia as keyof typeof turnos] || []).forEach((t) => {
-      if (misReservas.has(t.id)) items.push({ ...t, dia });
+      if (misReservas.has(t.id)) items.push({ ...t, dia, es_fijo: false });
     });
   });
 
@@ -49,9 +56,14 @@ export function MisTurnosView() {
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="font-body font-bold text-text-hi text-sm">
-                    {t.actividad}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-body font-bold text-text-hi text-sm">
+                      {t.actividad}
+                    </span>
+                    {t.es_fijo && (
+                      <Repeat size={12} className="text-lime" />
+                    )}
+                  </div>
                   <span className="text-[10px] font-mono text-text-muted uppercase tracking-wider">
                     Coach {t.coach}
                   </span>

@@ -19,28 +19,28 @@ export const mockAlumnos: Profile[] = [
 
 export const mockTurnos: Record<DiaSemana, TurnoConReservas[]> = {
   Lun: [
-    { id: "t1", dia: "Lun", hora: "07:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a2","a3","a4","a5","a6","a7","a8","a9","a10"], ocupados: 10 },
-    { id: "t2", dia: "Lun", hora: "09:00", actividad: "Pesas Libres", coach: "Vale", cupo: 8, activo: true, created_at: "", inscritos: ["a2","a5"], ocupados: 2 },
-    { id: "t3", dia: "Lun", hora: "18:30", actividad: "CrossTraining", coach: "Nacho", cupo: 14, activo: true, created_at: "", inscritos: ["a1","a3","a4","a6","a7","a8","a9","a10","a11","a12","a13","a14"], ocupados: 12 },
-    { id: "t4", dia: "Lun", hora: "20:00", actividad: "Movilidad", coach: "Vale", cupo: 10, activo: true, created_at: "", inscritos: ["a2","a3"], ocupados: 2 },
+    { id: "t1", dia: "Lun", hora: "07:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a2","a3","a4","a5","a6","a7","a8","a9","a10"], ocupados: 10, fijos: ["a1","a3","a7"] },
+    { id: "t2", dia: "Lun", hora: "09:00", actividad: "Pesas Libres", coach: "Vale", cupo: 8, activo: true, created_at: "", inscritos: ["a2","a5"], ocupados: 2, fijos: ["a2"] },
+    { id: "t3", dia: "Lun", hora: "18:30", actividad: "CrossTraining", coach: "Nacho", cupo: 14, activo: true, created_at: "", inscritos: ["a1","a3","a4","a6","a7","a8","a9","a10","a11","a12","a13","a14"], ocupados: 12, fijos: ["a1","a6","a11"] },
+    { id: "t4", dia: "Lun", hora: "20:00", actividad: "Movilidad", coach: "Vale", cupo: 10, activo: true, created_at: "", inscritos: ["a2","a3"], ocupados: 2, fijos: [] },
   ],
   Mar: [
-    { id: "t5", dia: "Mar", hora: "08:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a2","a3","a4","a5","a6"], ocupados: 6 },
-    { id: "t6", dia: "Mar", hora: "19:00", actividad: "Pesas Libres", coach: "Vale", cupo: 8, activo: true, created_at: "", inscritos: ["a5","a6","a7","a8","a9","a10","a11","a12"], ocupados: 8 },
+    { id: "t5", dia: "Mar", hora: "08:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a2","a3","a4","a5","a6"], ocupados: 6, fijos: ["a1","a2"] },
+    { id: "t6", dia: "Mar", hora: "19:00", actividad: "Pesas Libres", coach: "Vale", cupo: 8, activo: true, created_at: "", inscritos: ["a5","a6","a7","a8","a9","a10","a11","a12"], ocupados: 8, fijos: ["a5","a10"] },
   ],
   Mié: [
-    { id: "t7", dia: "Mié", hora: "07:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a2"], ocupados: 2 },
-    { id: "t8", dia: "Mié", hora: "18:30", actividad: "CrossTraining", coach: "Nacho", cupo: 14, activo: true, created_at: "", inscritos: ["a3","a4","a5","a6","a7","a8"], ocupados: 6 },
+    { id: "t7", dia: "Mié", hora: "07:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a2"], ocupados: 2, fijos: [] },
+    { id: "t8", dia: "Mié", hora: "18:30", actividad: "CrossTraining", coach: "Nacho", cupo: 14, activo: true, created_at: "", inscritos: ["a3","a4","a5","a6","a7","a8"], ocupados: 6, fijos: ["a3","a7"] },
   ],
   Jue: [
-    { id: "t9", dia: "Jue", hora: "09:00", actividad: "Movilidad", coach: "Vale", cupo: 10, activo: true, created_at: "", inscritos: ["a1","a2","a3","a4","a5","a6","a7","a8","a9","a10"], ocupados: 10 },
+    { id: "t9", dia: "Jue", hora: "09:00", actividad: "Movilidad", coach: "Vale", cupo: 10, activo: true, created_at: "", inscritos: ["a1","a2","a3","a4","a5","a6","a7","a8","a9","a10"], ocupados: 10, fijos: ["a1","a9"] },
   ],
   Vie: [
-    { id: "t10", dia: "Vie", hora: "07:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a2","a3"], ocupados: 3 },
-    { id: "t11", dia: "Vie", hora: "18:30", actividad: "CrossTraining", coach: "Nacho", cupo: 14, activo: true, created_at: "", inscritos: [], ocupados: 0 },
+    { id: "t10", dia: "Vie", hora: "07:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a2","a3"], ocupados: 3, fijos: [] },
+    { id: "t11", dia: "Vie", hora: "18:30", actividad: "CrossTraining", coach: "Nacho", cupo: 14, activo: true, created_at: "", inscritos: [], ocupados: 0, fijos: [] },
   ],
   Sáb: [
-    { id: "t12", dia: "Sáb", hora: "10:00", actividad: "Funcional", coach: "Vale", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a4","a9"], ocupados: 3 },
+    { id: "t12", dia: "Sáb", hora: "10:00", actividad: "Funcional", coach: "Vale", cupo: 12, activo: true, created_at: "", inscritos: ["a1","a4","a9"], ocupados: 3, fijos: ["a1"] },
   ],
   Dom: [],
 };

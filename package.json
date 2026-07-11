@@ -14,13 +14,14 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.110.2",
     "date-fns": "^4.4.0",
+    "framer-motion": "^12.42.2",
     "lucide-react": "^1.24.0",
+    "pdfkit": "^0.13.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",
     "recharts": "^3.9.2",
-    "zustand": "^5.0.14",
-  "pdfkit": "^0.13.0"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.2",

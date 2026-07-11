@@ -7,7 +7,7 @@ describe("turnosStore", () => {
     useTurnosStore.setState({
       turnos: {
         Lun: [
-          { id: "t1", dia: "Lun" as DiaSemana, hora: "07:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1"], ocupados: 1 },
+          { id: "t1", dia: "Lun" as DiaSemana, hora: "07:00", actividad: "Funcional", coach: "Nacho", cupo: 12, activo: true, created_at: "", inscritos: ["a1"], ocupados: 1, fijos: [] },
         ],
         Mar: [], Mié: [], Jue: [], Vie: [], Sáb: [], Dom: [],
       },

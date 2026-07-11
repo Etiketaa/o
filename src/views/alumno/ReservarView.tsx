@@ -1,37 +1,55 @@
+import { useState } from "react";
 import { DIAS } from "@/types";
 import { PlateMeter, Pill, Modal, Skeleton } from "@/components";
 import { useTurnosStore } from "@/stores/turnosStore";
 import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
-import { Calendar, Lock } from "lucide-react";
+import { Calendar, Lock, Repeat } from "lucide-react";
 import type { TurnoConReservas } from "@/types";
 
 export function ReservarView() {
-  const { turnos, misReservas, reservar, loading } = useTurnosStore();
+  const { getTurnosPorPlan, misReservas, reservar, loading } = useTurnosStore();
   const { selectedDay, setSelectedDay, selectedTurnoId, setSelectedTurnoId } = useUIStore();
   const { user } = useAuthStore();
+  const [esFijo, setEsFijo] = useState(false);
 
-  const list = (turnos[selectedDay as keyof typeof turnos] || [])
+  const turnosPorPlan = getTurnosPorPlan(user?.plan || "2x semana");
+  const list = (turnosPorPlan[selectedDay as keyof typeof turnosPorPlan] || [])
     .slice()
     .sort((a, b) => a.hora.localeCompare(b.hora));
 
   const openTurno = list.find((t) => t.id === selectedTurnoId);
 
   const handleReservar = (turno: TurnoConReservas) => {
-    if (user) reservar(turno.id, user.id);
+    if (user) reservar(turno.id, user.id, esFijo);
     setSelectedTurnoId(null);
+    setEsFijo(false);
   };
 
   return (
     <div className="flex flex-col h-full">
       <div className="px-6 pt-6 pb-4 border-b border-border">
         <div className="max-w-6xl mx-auto">
-          <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-2 block font-medium">
-            Reservar
-          </span>
-          <h2 className="font-display text-text-hi text-2xl tracking-wide mb-4">
-            Elegí tu turno
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-2 block font-medium">
+                Reservar
+              </span>
+              <h2 className="font-display text-text-hi text-2xl tracking-wide">
+                Elegí tu turno
+              </h2>
+            </div>
+            {user && (
+              <div className="text-right">
+                <span className="text-[10px] tracking-[0.15em] uppercase text-text-muted block">
+                  Tu plan
+                </span>
+                <span className="text-sm font-semibold text-lime">
+                  {user.plan}
+                </span>
+              </div>
+            )}
+          </div>
           <div className="flex gap-2 overflow-x-auto">
             {DIAS.map((d) => (
               <Pill key={d} active={d === selectedDay} onClick={() => setSelectedDay(d)}>
@@ -47,7 +65,7 @@ export function ReservarView() {
           {list.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-3 text-text-muted">
               <Calendar size={32} strokeWidth={1.5} />
-              <p className="text-sm">No hay turnos este día</p>
+              <p className="text-sm">No hay turnos disponibles para tu plan este día</p>
             </div>
           )}
 
@@ -104,7 +122,7 @@ export function ReservarView() {
         </div>
       </div>
 
-      <Modal open={!!openTurno} onClose={() => setSelectedTurnoId(null)}>
+      <Modal open={!!openTurno} onClose={() => { setSelectedTurnoId(null); setEsFijo(false); }}>
         {openTurno && (
           <div className="flex flex-col gap-4">
             <div>
@@ -116,6 +134,7 @@ export function ReservarView() {
               </h3>
             </div>
             <PlateMeter ocupados={openTurno.ocupados} total={openTurno.cupo} />
+            
             {misReservas.has(openTurno.id) ? (
               <button
                 onClick={() => {
@@ -131,12 +150,25 @@ export function ReservarView() {
                 <Lock size={14} /> Sin cupo disponible
               </div>
             ) : (
-              <button
-                onClick={() => handleReservar(openTurno)}
-                className="w-full py-3.5 rounded-xl text-center font-semibold text-sm bg-lime text-bg hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all"
-              >
-                Reservar mi lugar
-              </button>
+              <>
+                <button
+                  onClick={() => setEsFijo(!esFijo)}
+                  className={`w-full py-3 rounded-xl text-center text-sm flex items-center justify-center gap-2 transition-all ${
+                    esFijo 
+                      ? "bg-lime/10 border border-lime/30 text-lime" 
+                      : "border border-border text-text-muted hover:border-lime/20"
+                  }`}
+                >
+                  <Repeat size={14} />
+                  {esFijo ? "Turno fijo activado" : "Marcar como turno fijo"}
+                </button>
+                <button
+                  onClick={() => handleReservar(openTurno)}
+                  className="w-full py-3.5 rounded-xl text-center font-semibold text-sm bg-lime text-bg hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all"
+                >
+                  Reservar mi lugar
+                </button>
+              </>
             )}
           </div>
         )}
