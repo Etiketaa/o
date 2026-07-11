@@ -1,10 +1,10 @@
 import type { DiaSemana, TurnoConReservas, Profile, Pago, Asistencia } from "@/types";
 
 export const COLORS = {
-  bg: "#101215",
-  surface: "#1A1D22",
-  surfaceHi: "#20242B",
-  border: "#2A2E35",
+  bg: "#0c0e11",
+  surface: "#16191e",
+  surfaceHi: "#1e2228",
+  border: "#2e343c",
   lime: "#D4FF3D",
   limeDim: "#8FA83A",
   steel: "#5B7C99",

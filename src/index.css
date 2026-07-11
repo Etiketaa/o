@@ -2,10 +2,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #101215;
-  --color-surface: #1a1d22;
-  --color-surface-hi: #20242b;
-  --color-border: #2a2e35;
+  --color-bg: #0c0e11;
+  --color-surface: #16191e;
+  --color-surface-hi: #1e2228;
+  --color-surface-hi-2: #262c34;
+  --color-border: #2e343c;
   --color-lime: #d4ff3d;
   --color-lime-dim: #8fa83a;
   --color-steel: #5b7c99;
@@ -17,6 +18,11 @@
   --font-display: "Bebas Neue", "Arial Narrow", sans-serif;
   --font-body: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
+
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-glow-lime: 0 0 20px rgba(212,255,61,0.15);
+  --shadow-modal: 0 16px 48px rgba(0,0,0,0.5);
 }
 
 * {
@@ -80,11 +86,69 @@ input:-webkit-autofill:focus {
   outline-offset: 2px;
 }
 
+/* Section alternating backgrounds */
+.section-alt {
+  background-color: var(--color-surface);
+}
+
+/* Glass card base */
+.glass-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.glass-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Hero gradient */
+.hero-gradient {
+  background: linear-gradient(160deg, #0c0e11 0%, #111a0f 40%, #0f1a14 70%, #0c0e11 100%);
+}
+
+/* Glowing lime accent line */
+.glow-line {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-lime), transparent);
+  opacity: 0.4;
+}
+
+/* Stat number glow */
+.stat-glow {
+  text-shadow: 0 0 30px rgba(212,255,61,0.25);
+}
+
+/* Smooth page transitions */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in {
+  animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade,
   .skeleton,
-  .animate-bounce {
+  .animate-bounce,
+  .animate-slide-up,
+  .animate-scale-in {
     animation: none !important;
+  }
+  .glass-card-hover:hover {
+    transform: none;
   }
 }
