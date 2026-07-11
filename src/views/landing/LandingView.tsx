@@ -250,7 +250,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
 
               <motion.h1
                 variants={fadeInUp}
-                className="font-display text-text-hi text-[clamp(52px,9vw,96px)] leading-[0.92] uppercase tracking-[0.02em] mb-8"
+                className="font-display text-text-hi text-[clamp(36px,8vw,96px)] leading-[0.92] uppercase tracking-[0.02em] mb-8"
               >
                 ENTRENÁ<br />
                 <span className="text-lime drop-shadow-[0_0_30px_rgba(212,255,61,0.3)]">TU MEJOR</span><br />
@@ -306,7 +306,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
       </motion.section>
 
       {/* Actividades */}
-      <section id="actividades" className="py-24 md:py-40 relative">
+      <section id="actividades" className="py-16 md:py-24 lg:py-40 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-bg via-surface/50 to-bg pointer-events-none" />
         <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10">
           <motion.div
@@ -374,7 +374,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
       </section>
 
       {/* Planes */}
-      <section id="planes" className="py-24 md:py-40 relative">
+      <section id="planes" className="py-16 md:py-24 lg:py-40 relative">
         <div className="absolute inset-0">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-lime/[0.02] rounded-full blur-[150px] pointer-events-none" />
         </div>
@@ -456,7 +456,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
       </section>
 
       {/* Coaches */}
-      <section id="coaches" className="py-24 md:py-40 relative">
+      <section id="coaches" className="py-16 md:py-24 lg:py-40 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-bg via-surface/50 to-bg pointer-events-none" />
         <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10">
           <motion.div

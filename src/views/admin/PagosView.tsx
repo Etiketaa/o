@@ -130,10 +130,10 @@ export function PagosView() {
                 key={p.id}
                 className="flex items-center justify-between py-4 border-b border-border last:border-0 md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 rounded-lg hover:bg-surface/50 transition-colors"
               >
-                <div className="col-span-3 flex items-center gap-3">
+                <div className="col-span-3 flex items-center gap-3 min-w-0">
                   {al && <Avatar nombre={al.nombre} size="sm" />}
-                  <div className="flex flex-col">
-                    <span className="text-text-hi font-semibold text-sm">
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-text-hi font-semibold text-sm truncate">
                       {al?.nombre || "Desconocido"}
                     </span>
                     <span className="text-[10px] font-mono text-text-muted md:hidden">

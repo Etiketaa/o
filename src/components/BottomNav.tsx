@@ -15,7 +15,7 @@ export function BottomNav({ items }: BottomNavProps) {
   const { activeTab, setActiveTab } = useUIStore();
 
   return (
-    <div className="flex items-center justify-around px-2 py-2 bg-surface border-t border-border">
+    <div className="flex items-center justify-around px-2 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] bg-surface border-t border-border">
       {items.map((item) => {
         const Icon = item.icon;
         const active = activeTab === item.id;

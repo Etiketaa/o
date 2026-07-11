@@ -19,7 +19,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
       aria-labelledby={title ? "modal-title" : undefined}
     >
       <div
-        className="w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 flex flex-col gap-4 max-h-[85vh] overflow-y-auto"
+        className="w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-4 max-h-[85vh] overflow-y-auto"
         style={{ backgroundColor: COLORS.surface, border: `1px solid ${COLORS.border}` }}
       >
         <div className="flex items-center justify-between">

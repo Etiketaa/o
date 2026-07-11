@@ -121,17 +121,17 @@ export function PerfilView() {
                 </div>
               </div>
               <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between py-2 border-b border-border">
-                  <span className="text-text-muted text-sm">Email</span>
-                  <span className="text-text-hi text-sm font-mono">{user.email}</span>
+                <div className="flex items-center justify-between py-2 border-b border-border min-w-0">
+                  <span className="text-text-muted text-sm shrink-0">Email</span>
+                  <span className="text-text-hi text-sm font-mono truncate ml-4 text-right">{user.email}</span>
                 </div>
-                <div className="flex items-center justify-between py-2 border-b border-border">
-                  <span className="text-text-muted text-sm">Teléfono</span>
-                  <span className="text-text-hi text-sm font-mono">{user.telefono}</span>
+                <div className="flex items-center justify-between py-2 border-b border-border min-w-0">
+                  <span className="text-text-muted text-sm shrink-0">Teléfono</span>
+                  <span className="text-text-hi text-sm font-mono truncate ml-4 text-right">{user.telefono}</span>
                 </div>
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-text-muted text-sm">Plan</span>
-                  <span className="text-text-hi text-sm font-mono">{user.plan}</span>
+                  <span className="text-text-muted text-sm shrink-0">Plan</span>
+                  <span className="text-text-hi text-sm font-mono truncate ml-4 text-right">{user.plan}</span>
                 </div>
               </div>
             </div>

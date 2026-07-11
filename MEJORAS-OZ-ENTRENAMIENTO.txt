@@ -1,0 +1,95 @@
+RESUMEN DE MEJORAS - OZ ENTRENAMIENTO
+======================================
+
+1. LANDING PAGE PREMIUM
+-----------------------
+- Diseño completo al estilo agencia (referencia: Stripe, Linear, Vercel)
+- Hero con efecto glow, parallax y scroll indicator animado
+- Animaciones elegantes con Framer Motion (Fade Up, Stagger, Scale, Scroll Reveal)
+- Navbar con glass morphism y blur al hacer scroll
+- Cards rediseñadas con hover effects, bordes redondeados y sombras modernas
+- Sección de planes con diferenciación visual del plan "Popular"
+- Sistema de botones unificado con microinteracciones (scale, glow, elevación)
+- Fondos con profundidad mediante gradientes, blur blobs y grid pattern sutil
+- Responsive optimizado para Desktop, Tablet y Mobile
+- Accesibilidad mejorada (focus visible, aria-labels, contraste, reduced motion)
+
+2. FILTRADO DE TURNOS POR PLAN
+-------------------------------
+- Cada alumno solo ve los turnos de actividades incluidas en su plan contratado
+- Nueva tabla plan_actividades en Supabase que vincula planes con actividades:
+  * Plan 2x semana: Pesas Libres, Movilidad
+  * Plan 3x semana: Funcional, Pesas Libres, Movilidad
+  * Plan Full: Todas las actividades (Funcional, Pesas Libres, CrossTraining, Movilidad)
+- Indicador del plan actual visible en la vista de reserva del alumno
+- Mensaje contextual: "No hay turnos disponibles para tu plan este día"
+
+3. SISTEMA DE TURNOS FIJOS
+---------------------------
+- Los alumnos pueden marcar una reserva como "turno fijo" al crearla
+- Icono de recurrente (Repeat) junto a los turnos fijos en todas las vistas
+- Admin tiene sección dedicada "Turnos Fijos" en AlumnosView
+- Turnos fijos agrupados por horario mostrando lista de alumnos asignados
+- En AgendaView: indicador visual de cuántos alumnos fijos tiene cada turno
+- Campo es_fijo agregado a la tabla reservas de Supabase
+
+4. SISTEMA DE SEGUIMIENTO DE PAGOS
+------------------------------------
+
+Para el alumno:
+- Countdown visual: Alerta "Quedan X días para pagar" cuando está pendiente
+- Fecha límite configurable: día 10 de cada mes
+- Datos bancarios visibles con botón de copiar:
+  * CVU: 0000032160000007890123
+  * Alias: OZENTRENAMIENTO
+  * Titular: OZ Entrenamiento S.R.L.
+  * Banco: Banco Nación
+- Botón para subir comprobante de pago (imagen JPG/PNG/WebP o PDF, máx 10MB)
+- Estados de pago visuales:
+  * Al día (verde) - Pago confirmado
+  * Pendiente (amarillo) - Falta pagar, con countdown
+  * Verificando (azul) - Comprobante subido, esperando revisión
+  * No registrado (rojo) - No hay pago registrado
+- Historial de pagos con links para descargar comprobantes
+
+Para el admin (PagosView):
+- Stats de cobro: Total cobrado, Pendiente, Verificando, Total filtrado
+- Filtros por estado: Todos, Pagado, Pendiente, Verificando, Vencido
+- Búsqueda por nombre de alumno
+- Tabla completa: Alumno, Período (mes/año), Descripción, Monto, Comprobante, Estado
+- Modal de detalle con:
+  * Info del alumno
+  * Preview del comprobante subido
+  * Campo de notas admin
+  * Botones para Aprobar o Rechazar pago
+- Función verificarPago que actualiza estado y guarda quién verificó
+
+5. PRECIOS POR PLAN
+--------------------
+- Plan 2x semana: $12.000/mes
+- Plan 3x semana: $14.000/mes
+- Plan Full: $16.000/mes
+
+6. BASE DE DATOS (SUPABASE)
+----------------------------
+Tablas modificadas/creadas:
+- profiles: Campo plan existente
+- turnos: Actividad como string embebido
+- reservas: Nuevo campo es_fijo
+- pagos: Nuevos campos (mes_pago, anio_pago, comprobante_url, comprobante_tipo, verificado, notas_admin)
+- plan_actividades (NUEVA): Relación plan ↔ actividades permitidas
+- pago_config (NUEVA): Configuración de pagos (día límite, CVU, alias, banco)
+
+Storage:
+- Bucket "comprobantes" para archivos subidos por alumnos
+- Políticas RLS para acceso seguro
+
+7. STACK TÉCNICO
+-----------------
+- Frontend: React 19 + TypeScript + Vite
+- Estilos: Tailwind CSS 4
+- Animaciones: Framer Motion
+- Estado: Zustand
+- Backend: Supabase (PostgreSQL + Auth + Storage + RLS)
+- PWA: Progressive Web App (funciona offline)
+- Tests: Vitest + Testing Library

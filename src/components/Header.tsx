@@ -5,7 +5,7 @@ export function Header() {
   const { user, logout } = useAuthStore();
 
   return (
-    <div className="flex items-center justify-between px-5 pt-5 pb-4">
+    <div className="flex items-center justify-between px-5 pt-[calc(1.25rem+env(safe-area-inset-top,0px))] pb-4">
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-lime flex items-center justify-center">
           <Dumbbell size={18} className="text-bg" />

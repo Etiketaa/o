@@ -34,7 +34,7 @@ function StatCard({ label, value, icon: Icon, trend, trendLabel, accent }: {
             </div>
           )}
         </div>
-        <div className={`font-display text-4xl tracking-wide mb-1 ${accent ? "text-bg" : "text-text-hi"}`}>
+        <div className={`font-display text-3xl sm:text-4xl tracking-wide mb-1 overflow-hidden ${accent ? "text-bg" : "text-text-hi"}`}>
           {value}
         </div>
         <div className={`text-[11px] font-mono uppercase tracking-wider ${
@@ -116,7 +116,7 @@ export function DashboardView() {
                 Vista general
               </span>
             </div>
-            <h1 className="font-display text-text-hi text-4xl lg:text-5xl tracking-wide">
+            <h1 className="font-display text-text-hi text-3xl md:text-4xl lg:text-5xl tracking-wide">
               Dashboard
             </h1>
           </div>

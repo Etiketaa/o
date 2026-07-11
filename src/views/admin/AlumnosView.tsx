@@ -95,9 +95,9 @@ export function AlumnosView() {
                   onClick={() => setSelectedAlumno(a)}
                   className="w-full flex items-center justify-between py-4 border-b border-border last:border-0 hover:bg-surface/50 transition-colors text-left md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 rounded-lg"
                 >
-                  <div className="col-span-5 flex items-center gap-3">
+                  <div className="col-span-5 flex items-center gap-3 min-w-0">
                     <Avatar nombre={a.nombre} size="sm" />
-                    <span className="text-text-hi font-semibold text-sm">{a.nombre}</span>
+                    <span className="text-text-hi font-semibold text-sm truncate">{a.nombre}</span>
                   </div>
                   <div className="col-span-3 text-text-muted text-sm hidden md:block">
                     {a.email}
