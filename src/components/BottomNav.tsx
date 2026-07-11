@@ -27,7 +27,9 @@ export function BottomNav({ items }: BottomNavProps) {
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-lg transition-colors"
+            aria-label={item.label}
+            aria-current={active ? "page" : undefined}
+            className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
           >
             <Icon size={20} color={active ? COLORS.lime : COLORS.textMuted} strokeWidth={active ? 2.5 : 2} />
             <span

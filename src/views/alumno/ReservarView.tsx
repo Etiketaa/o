@@ -1,6 +1,6 @@
 import { DIAS } from "@/types";
 import { COLORS, FONTS } from "@/lib/utils";
-import { PlateMeter, Pill, Modal } from "@/components";
+import { PlateMeter, Pill, Modal, Skeleton } from "@/components";
 import { useTurnosStore } from "@/stores/turnosStore";
 import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -8,7 +8,7 @@ import { Calendar, Lock, CalendarCheck } from "lucide-react";
 import type { TurnoConReservas } from "@/types";
 
 export function ReservarView() {
-  const { turnos, misReservas, reservar } = useTurnosStore();
+  const { turnos, misReservas, reservar, loading } = useTurnosStore();
   const { selectedDay, setSelectedDay, selectedTurnoId, setSelectedTurnoId } = useUIStore();
   const { user } = useAuthStore();
 
@@ -40,7 +40,11 @@ export function ReservarView() {
             <p style={{ fontFamily: FONTS.body }} className="text-sm">No hay turnos este día</p>
           </div>
         )}
-        {list.map((t) => {
+        {loading && list.length === 0
+          ? Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} height={64} className="rounded-lg" />
+            ))
+          : list.map((t) => {
           const lleno = t.ocupados >= t.cupo;
           const reservado = misReservas.has(t.id);
           return (

@@ -3,6 +3,8 @@ import { Dumbbell, Mail, Lock, Eye, EyeOff, User, Phone, ArrowLeft } from "lucid
 import { COLORS, FONTS } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { isMockMode } from "@/lib/supabase";
+import { useToast } from "@/components/Toast";
+import { ErrorMessage } from "@/components/ErrorMessage";
 
 type Mode = "login" | "register";
 
@@ -20,6 +22,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const { login, signup, loginAs, loading } = useAuthStore();
+  const { pushToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +42,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
         setError(result.error);
       } else {
         setSuccess("Cuenta creada. Revisa tu email para confirmar el registro.");
+        pushToast("Cuenta creada. Revisá tu email para confirmar el registro.", "success");
         setMode("login");
       }
     }
@@ -53,6 +57,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
       {onBack && (
         <button
           onClick={onBack}
+          aria-label="Volver al inicio"
           className="absolute top-4 left-4 flex items-center gap-1 text-xs"
           style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }}
         >
@@ -75,7 +80,12 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-4 mb-6">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm flex flex-col gap-4 mb-6"
+        aria-label="Formulario de autenticación"
+        noValidate
+      >
         {mode === "register" && (
           <>
             <div
@@ -88,6 +98,9 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Nombre completo"
+                aria-label="Nombre completo"
+                autoComplete="name"
+                required
                 className="flex-1 outline-none text-sm"
                 style={{ fontFamily: FONTS.body, color: COLORS.textHi, backgroundColor: "transparent" }}
               />
@@ -102,6 +115,8 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
                 placeholder="Teléfono (opcional)"
+                aria-label="Teléfono"
+                autoComplete="tel"
                 className="flex-1 outline-none text-sm"
                 style={{ fontFamily: FONTS.body, color: COLORS.textHi, backgroundColor: "transparent" }}
               />
@@ -119,6 +134,9 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
+            aria-label="Email"
+            autoComplete="email"
+            required
             className="flex-1 outline-none text-sm"
             style={{ fontFamily: FONTS.body, color: COLORS.textHi, backgroundColor: "transparent" }}
           />
@@ -134,20 +152,24 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
+            aria-label="Contraseña"
+            autoComplete="current-password"
+            required
             className="flex-1 outline-none text-sm"
             style={{ fontFamily: FONTS.body, color: COLORS.textHi, backgroundColor: "transparent" }}
           />
-          <button type="button" onClick={() => setShowPassword(!showPassword)}>
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            aria-pressed={showPassword}
+          >
             {showPassword ? <EyeOff size={16} color={COLORS.textMuted} /> : <Eye size={16} color={COLORS.textMuted} />}
           </button>
         </div>
 
-        {error && (
-          <p className="text-xs text-center" style={{ color: COLORS.danger }}>{error}</p>
-        )}
-        {success && (
-          <p className="text-xs text-center" style={{ color: COLORS.lime }}>{success}</p>
-        )}
+        <ErrorMessage message={error} variant="error" />
+        <ErrorMessage message={success} variant="success" />
 
         <button
           type="submit"
@@ -163,12 +185,22 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
         {mode === "login" ? (
           <p style={{ fontFamily: FONTS.body, color: COLORS.textMuted }} className="text-sm">
             ¿No tenés cuenta?{" "}
-            <button onClick={() => { setMode("register"); setError(""); setSuccess(""); }} style={{ color: COLORS.lime }} className="font-semibold">
+            <button
+              onClick={() => { setMode("register"); setError(""); setSuccess(""); }}
+              aria-label="Cambiar a registro"
+              style={{ color: COLORS.lime }}
+              className="font-semibold"
+            >
               Registrate
             </button>
           </p>
         ) : (
-          <button onClick={() => { setMode("login"); setError(""); setSuccess(""); }} className="flex items-center gap-1 text-sm" style={{ color: COLORS.lime }}>
+          <button
+            onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
+            className="flex items-center gap-1 text-sm"
+            aria-label="Volver al login"
+            style={{ color: COLORS.lime }}
+          >
             <ArrowLeft size={14} /> Volver al login
           </button>
         )}

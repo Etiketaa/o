@@ -26,6 +26,9 @@ function InstagramIcon({ size = 18, color = "currentColor" }: { size?: number; c
   );
 }
 import { COLORS, FONTS } from "@/lib/utils";
+import { GlassCard } from "@/components/GlassCard";
+import { useInView } from "@/hooks/useInView";
+import { useToast } from "@/components/Toast";
 
 const ACTIVITIES = [
   { name: "Funcional", desc: "Entrenamiento de alta intensidad que mejora fuerza, resistencia y coordinación.", icon: Zap, coach: "Nacho / Vale", schedule: "Lun a Vie 07:00 - 08:00" },
@@ -54,6 +57,13 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const [heroRef, heroIn] = useInView({ threshold: 0.1 });
+  const [activitiesRef, activitiesIn] = useInView({ threshold: 0.15 });
+  const [plansRef, plansIn] = useInView({ threshold: 0.15 });
+  const [coachesRef, coachesIn] = useInView({ threshold: 0.15 });
+  const [ubicacionRef, ubiIn] = useInView({ threshold: 0.15 });
+  const [ctaRef, ctaIn] = useInView({ threshold: 0.15 });
 
   return (
     <div className="min-h-screen overflow-y-auto" style={{ backgroundColor: COLORS.bg }}>
@@ -130,7 +140,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
       </nav>
 
       {/* Hero */}
-      <section className="landing-hero landing-hero-bg landing-fade-in flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-24 pb-16 sm:pt-32 sm:pb-24" style={{ minHeight: "85vh" }}>
+      <section ref={heroRef} className={`landing-hero landing-hero-bg flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-24 pb-16 sm:pt-32 sm:pb-24 ${heroIn ? "animate-fade" : "opacity-0"}`} style={{ minHeight: "85vh" }}>
         <div className="landing-hero-content">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6" style={{ border: `1px solid ${COLORS.border}`, backgroundColor: COLORS.surface }}>
             <MapPin size={12} color={COLORS.lime} />
@@ -190,7 +200,7 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
       </section>
 
       {/* Actividades */}
-      <section id="actividades" className="px-4 sm:px-6 py-16 sm:py-24 max-w-6xl mx-auto">
+      <section id="actividades" ref={activitiesRef} className={`px-4 sm:px-6 py-16 sm:py-24 max-w-6xl mx-auto ${activitiesIn ? "animate-fade" : "opacity-0"}`}>
         <div className="text-center mb-12">
           <span style={{ fontFamily: FONTS.mono, color: COLORS.lime }} className="text-xs">ACTIVIDADES</span>
           <h2 style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: "clamp(28px, 5vw, 48px)", letterSpacing: 1 }} className="mt-2">
@@ -202,11 +212,11 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
           {ACTIVITIES.map((act) => {
             const Icon = act.icon;
             return (
-              <div
-                key={act.name}
-                className="rounded-xl p-6 transition-all hover:scale-[1.02] landing-fade-in bg-white/10 backdrop-blur-md"
-style={{ border: `1px solid ${COLORS.border}` }}
-              >
+                <GlassCard
+                  key={act.name}
+                  hoverable
+                  className="p-6 landing-fade-in"
+                >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.surfaceHi, border: `1px solid ${COLORS.border}` }}>
                   <Icon size={22} color={COLORS.lime} />
                 </div>
@@ -216,14 +226,14 @@ style={{ border: `1px solid ${COLORS.border}` }}
                   <span style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }} className="text-[10px]">COACH: {act.coach.toUpperCase()}</span>
                   <span style={{ fontFamily: FONTS.mono, color: COLORS.limeDim }} className="text-[10px]">{act.schedule}</span>
                 </div>
-              </div>
+              </GlassCard>
             );
           })}
         </div>
       </section>
 
       {/* Planes */}
-      <section id="planes" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: COLORS.surface }}>
+      <section id="planes" ref={plansRef} className={`px-4 sm:px-6 py-16 sm:py-24 ${plansIn ? "animate-fade" : "opacity-0"}`} style={{ backgroundColor: COLORS.surface }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <span style={{ fontFamily: FONTS.mono, color: COLORS.lime }} className="text-xs">PLANES</span>
@@ -234,11 +244,11 @@ style={{ border: `1px solid ${COLORS.border}` }}
 
           <div className="landing-grid-3">
             {PLANS.map((plan) => (
-              <div
+              <GlassCard
                 key={plan.name}
-                className="rounded-xl p-6 flex flex-col relative landing-fade-in backdrop-blur-md"
+                hoverable
+                className="p-6 flex flex-col relative"
                 style={{
-                  backgroundColor: plan.popular ? COLORS.bg : COLORS.surfaceHi,
                   border: `1px solid ${plan.popular ? COLORS.lime : COLORS.border}`,
                 }}
               >
@@ -272,14 +282,14 @@ style={{ border: `1px solid ${COLORS.border}` }}
                 >
                   EMPEZAR AHORA
                 </button>
-              </div>
+              </GlassCard>
             ))}
           </div>
         </div>
       </section>
 
       {/* Coaches */}
-      <section id="coaches" className="px-4 sm:px-6 py-16 sm:py-24 max-w-6xl mx-auto">
+      <section id="coaches" ref={coachesRef} className={`px-4 sm:px-6 py-16 sm:py-24 max-w-6xl mx-auto ${coachesIn ? "animate-fade" : "opacity-0"}`}>
         <div className="text-center mb-12">
           <span style={{ fontFamily: FONTS.mono, color: COLORS.lime }} className="text-xs">EQUIPO</span>
           <h2 style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: "clamp(28px, 5vw, 48px)", letterSpacing: 1 }} className="mt-2">
@@ -289,30 +299,31 @@ style={{ border: `1px solid ${COLORS.border}` }}
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
           {COACHES.map((c) => (
-            <div
-              key={c.name}
-              className="flex items-center gap-4 px-6 py-5 rounded-xl w-full sm:w-auto landing-fade-in backdrop-blur-md"
-              style={{ backgroundColor: COLORS.surface, border: `1px solid ${COLORS.border}` }}
-            >
+              <GlassCard
+                key={c.name}
+                hoverable
+                className="flex items-center gap-4 px-6 py-5 w-full sm:w-auto"
+                style={{ border: `1px solid ${COLORS.border}` }}
+              >
               <div className="text-4xl">{c.emoji}</div>
               <div>
                 <h3 style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: 22, letterSpacing: 1 }}>{c.name}</h3>
                 <p style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }} className="text-xs">{c.specialty}</p>
               </div>
-            </div>
+            </GlassCard>
           ))}
         </div>
       </section>
 
       {/* Ubicación */}
-      <section id="ubicacion" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: COLORS.surface }}>
+      <section id="ubicacion" ref={ubicacionRef} className={`px-4 sm:px-6 py-16 sm:py-24 ${ubiIn ? "animate-fade" : "opacity-0"}`} style={{ backgroundColor: COLORS.surface }}>
         <div className="max-w-6xl mx-auto text-center">
           <span style={{ fontFamily: FONTS.mono, color: COLORS.lime }} className="text-xs">UBICACIÓN</span>
           <h2 style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: "clamp(28px, 5vw, 48px)", letterSpacing: 1 }} className="mt-2 mb-8">
             ENCONTRANOS
           </h2>
 
-          <div className="rounded-xl p-6 sm:p-8 inline-flex flex-col items-center gap-4 landing-fade-in backdrop-blur-md" style={{ backgroundColor: COLORS.bg, border: `1px solid ${COLORS.border}` }}>
+          <GlassCard className="p-6 sm:p-8 inline-flex flex-col items-center gap-4">
             <MapPin size={32} color={COLORS.lime} />
             <div>
               <p style={{ fontFamily: FONTS.body, color: COLORS.textHi, fontWeight: 600 }} className="text-base">OZ Entrenamiento</p>
@@ -334,12 +345,12 @@ style={{ border: `1px solid ${COLORS.border}` }}
               <InstagramIcon size={16} />
               Seguinos en Instagram
             </a>
-          </div>
+          </GlassCard>
         </div>
       </section>
 
       {/* CTA Final */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24 text-center">
+      <section ref={ctaRef} className={`px-4 sm:px-6 py-16 sm:py-24 text-center ${ctaIn ? "animate-fade" : "opacity-0"}`}>
         <h2 style={{ fontFamily: FONTS.display, color: COLORS.textHi, fontSize: "clamp(28px, 5vw, 48px)", letterSpacing: 1 }}>
           ¿LISTO PARA <span style={{ color: COLORS.lime }}>ENTRENAR</span>?
         </h2>
@@ -368,8 +379,8 @@ style={{ border: `1px solid ${COLORS.border}` }}
         <div className="flex items-center justify-center gap-4 mt-4">
           <a href="https://www.instagram.com/oz.entrenamiento/" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.textMuted }} className="hover:text-white transition-colors">
             <InstagramIcon size={18} />
-          </a>
-        </div>
+            </a>
+          </div>
       </footer>
     </div>
   );

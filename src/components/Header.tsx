@@ -21,7 +21,8 @@ export function Header() {
         {user && (
           <button
             onClick={logout}
-            className="p-1.5 rounded-lg transition-colors hover:bg-[var(--color-surface-hi)]"
+            aria-label="Cerrar sesión"
+            className="p-1.5 rounded-lg transition-colors hover:bg-[var(--color-surface-hi)] focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
             style={{ color: COLORS.textMuted }}
             title="Cerrar sesión"
           >
