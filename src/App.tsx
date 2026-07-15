@@ -14,6 +14,8 @@ import { AlumnosView } from "@/views/admin/AlumnosView";
 import { ControlView } from "@/views/admin/ControlView";
 import { DashboardView } from "@/views/admin/DashboardView";
 import { PagosView } from "@/views/admin/PagosView";
+import { CalendarioView } from "@/views/admin/CalendarioView";
+import { SettingsView } from "@/views/admin/SettingsView";
 
 function AppContent() {
   const { user } = useAuthStore();
@@ -35,10 +37,12 @@ function AppContent() {
   if (user.role === "admin") {
     switch (activeTab) {
       case "agenda": return <AgendaView />;
+      case "calendario": return <CalendarioView />;
       case "alumnos": return <AlumnosView />;
       case "control": return <ControlView />;
       case "pagos": return <PagosView />;
       case "dashboard": return <DashboardView />;
+      case "config": return <SettingsView />;
       default: return <AgendaView />;
     }
   }

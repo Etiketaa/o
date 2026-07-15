@@ -1,12 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DIAS } from "@/types";
 import { useTurnosStore } from "@/stores/turnosStore";
 import { useAuthStore } from "@/stores/authStore";
+import { Modal, useToast } from "@/components";
 import { CalendarCheck, X, Repeat } from "lucide-react";
 
 export function MisTurnosView() {
   const { turnos, misReservas, cancelarReserva, loadMisReservas } = useTurnosStore();
   const { user } = useAuthStore();
+  const { pushToast } = useToast();
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; actividad: string; dia: string; hora: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -20,6 +23,14 @@ export function MisTurnosView() {
       if (misReservas.has(t.id)) items.push({ ...t, dia, es_fijo: false });
     });
   });
+
+  const handleCancel = () => {
+    if (user && cancelTarget) {
+      cancelarReserva(cancelTarget.id, user.id);
+      pushToast("Reserva cancelada", "success");
+      setCancelTarget(null);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-y-auto p-6">
@@ -70,10 +81,9 @@ export function MisTurnosView() {
                 </div>
               </div>
               <button
-                onClick={() => {
-                  if (user) cancelarReserva(t.id, user.id);
-                }}
+                onClick={() => setCancelTarget({ id: t.id, actividad: t.actividad, dia: t.dia, hora: t.hora })}
                 className="flex items-center justify-center w-9 h-9 rounded-full border border-border text-text-muted hover:text-danger hover:border-danger transition-all"
+                aria-label="Cancelar reserva"
               >
                 <X size={16} />
               </button>
@@ -81,6 +91,36 @@ export function MisTurnosView() {
           ))}
         </div>
       </div>
+
+      {/* Modal de confirmación */}
+      <Modal open={!!cancelTarget} onClose={() => setCancelTarget(null)}>
+        {cancelTarget && (
+          <div className="flex flex-col gap-4">
+            <h3 className="font-display text-text-hi text-xl tracking-wide">
+              Cancelar reserva
+            </h3>
+            <p className="text-text-muted text-sm">
+              ¿Seguro que querés cancelar tu reserva en{" "}
+              <span className="text-lime font-semibold">{cancelTarget.actividad}</span>{" "}
+              ({cancelTarget.dia} {cancelTarget.hora})?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancel}
+                className="flex-1 py-3 rounded-xl text-center font-semibold text-sm border border-danger text-danger hover:bg-danger/5 transition-all"
+              >
+                Sí, cancelar
+              </button>
+              <button
+                onClick={() => setCancelTarget(null)}
+                className="flex-1 py-3 rounded-xl text-center font-semibold text-sm border border-border text-text-hi hover:bg-surface transition-all"
+              >
+                No, mantener
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

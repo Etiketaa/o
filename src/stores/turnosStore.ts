@@ -171,6 +171,9 @@ export const useTurnosStore = create<TurnosState>((set, get) => ({
 
   reservar: async (turnoId, alumnoId, esFijo = false) => {
     const { misReservas, turnos } = get();
+
+    if (misReservas.has(turnoId)) return;
+
     const newMisReservas = new Set(misReservas);
     newMisReservas.add(turnoId);
 
@@ -184,6 +187,16 @@ export const useTurnosStore = create<TurnosState>((set, get) => ({
     set({ misReservas: newMisReservas, turnos: newTurnos });
 
     if (!isMockMode) {
+      const { data: existing } = await supabase
+        .from("reservas")
+        .select("id")
+        .eq("turno_id", turnoId)
+        .eq("alumno_id", alumnoId)
+        .eq("estado", "activa")
+        .maybeSingle();
+
+      if (existing) return;
+
       await supabase.from("reservas").insert({ 
         turno_id: turnoId, 
         alumno_id: alumnoId, 

@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
-import { Search, Repeat, Users } from "lucide-react";
+import { Search, Repeat, Users, Download } from "lucide-react";
 import { StatusChip, Modal, Avatar } from "@/components";
 import { useTurnosStore } from "@/stores/turnosStore";
+import { exportAlumnosCSV } from "@/lib/csv";
 import type { Profile } from "@/types";
 
 type Tab = "alumnos" | "fijos";
@@ -34,6 +35,15 @@ export function AlumnosView() {
                 {activeTab === "alumnos" ? `${alumnos.length} alumnos` : `${turnosFijos.length} turnos fijos`}
               </h2>
             </div>
+            {activeTab === "alumnos" && (
+              <button
+                onClick={() => exportAlumnosCSV(alumnos)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono uppercase tracking-wider border border-border hover:border-lime/30 text-text-muted hover:text-lime transition-all"
+              >
+                <Download size={14} />
+                CSV
+              </button>
+            )}
           </div>
 
           {/* Tabs */}

@@ -3,7 +3,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { Sidebar } from "@/components/Sidebar";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { useAuthStore } from "@/stores/authStore";
-import { Calendar, CalendarCheck, User, Users, ClipboardCheck, LayoutDashboard, Wallet } from "lucide-react";
+import { Calendar, CalendarCheck, CalendarDays, User, Users, ClipboardCheck, LayoutDashboard, Wallet, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
@@ -20,10 +20,12 @@ const ALUMNO_NAV: NavItem[] = [
 
 const ADMIN_NAV: NavItem[] = [
   { id: "agenda", label: "Agenda", icon: Calendar },
+  { id: "calendario", label: "Calendario", icon: CalendarDays },
   { id: "alumnos", label: "Alumnos", icon: Users },
   { id: "control", label: "Control", icon: ClipboardCheck },
   { id: "pagos", label: "Pagos", icon: Wallet },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "config", label: "Config", icon: Settings },
 ];
 
 interface AppLayoutProps {

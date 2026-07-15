@@ -4,6 +4,7 @@ import { StatusChip, Avatar, Modal } from "@/components";
 import { useTurnosStore } from "@/stores/turnosStore";
 import { usePagosStore, getPrecioPlan } from "@/stores/pagosStore";
 import { formatMoney, formatDate } from "@/lib/utils";
+import { exportPagosCSV } from "@/lib/csv";
 import type { Pago } from "@/types";
 
 const MESES = [
@@ -54,12 +55,26 @@ export function PagosView() {
       <div className="px-6 pt-6 pb-4 border-b border-border">
         <div className="max-w-6xl mx-auto">
           <div className="mb-4">
-            <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-2 block font-medium">
-              Pagos
-            </span>
-            <h2 className="font-display text-text-hi text-2xl tracking-wide">
-              Gestión de cobros
-            </h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-2 block font-medium">
+                  Pagos
+                </span>
+                <h2 className="font-display text-text-hi text-2xl tracking-wide">
+                  Gestión de cobros
+                </h2>
+              </div>
+              <button
+                onClick={() => {
+                  const alumnosById = Object.fromEntries(alumnos.map((a) => [a.id, a]));
+                  exportPagosCSV(pagos, alumnosById);
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono uppercase tracking-wider border border-border hover:border-lime/30 text-text-muted hover:text-lime transition-all"
+              >
+                <Download size={14} />
+                CSV
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">

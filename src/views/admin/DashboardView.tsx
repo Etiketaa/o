@@ -1,8 +1,8 @@
-import { useMemo } from "react";
-import { Users, Calendar, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight, Clock, Zap } from "lucide-react";
+import { useMemo, useEffect } from "react";
+import { Users, Calendar, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight, Clock, Zap, Activity, Award } from "lucide-react";
 import { formatMoney } from "@/lib/utils";
 import { useTurnosStore } from "@/stores/turnosStore";
-import { mockPagos, mockTurnos } from "@/lib/mock-data";
+import { usePagosStore } from "@/stores/pagosStore";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 
 function StatCard({ label, value, icon: Icon, trend, trendLabel, accent }: {
@@ -59,12 +59,26 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
 export function DashboardView() {
   const { turnos, alumnos } = useTurnosStore();
+  const { pagos, loadPagos } = usePagosStore();
+
+  useEffect(() => {
+    loadPagos();
+  }, []);
 
   const stats = useMemo(() => {
     const alumnosActivos = alumnos.filter((a) => a.estado === "activo").length;
     const alumnosVencidos = alumnos.filter((a) => a.estado === "vencido").length;
-    const ingresosMes = mockPagos.filter((p) => p.estado === "pagado").reduce((s, p) => s + p.monto, 0);
-    const ingresosPendientes = mockPagos.filter((p) => p.estado === "pendiente").reduce((s, p) => s + p.monto, 0);
+
+    const hoy = new Date();
+    const mesActual = hoy.getMonth() + 1;
+    const anioActual = hoy.getFullYear();
+
+    const ingresosMes = pagos
+      .filter((p) => p.estado === "pagado" && p.mes_pago === mesActual && p.anio_pago === anioActual)
+      .reduce((s, p) => s + p.monto, 0);
+    const ingresosPendientes = pagos
+      .filter((p) => p.estado === "pendiente" && p.mes_pago === mesActual && p.anio_pago === anioActual)
+      .reduce((s, p) => s + p.monto, 0);
 
     let turnosSemana = 0;
     let asistentesSemana = 0;
@@ -79,7 +93,7 @@ export function DashboardView() {
     const ocupacionPromedio = capacidadTotal > 0 ? Math.round((asistentesSemana / capacidadTotal) * 100) : 0;
 
     return { alumnosActivos, alumnosVencidos, totalAlumnos: alumnos.length, turnosSemana, asistentesSemana, ingresosMes, ingresosPendientes, ocupacionPromedio };
-  }, [turnos, alumnos]);
+  }, [turnos, alumnos, pagos]);
 
   const chartData = useMemo(() => {
     return ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((dia) => {
@@ -92,17 +106,43 @@ export function DashboardView() {
     });
   }, [turnos]);
 
+  const topActividades = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const dia of Object.values(turnos)) {
+      for (const t of dia) {
+        counts[t.actividad] = (counts[t.actividad] || 0) + t.ocupados;
+      }
+    }
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4);
+  }, [turnos]);
+
+  const topAlumnos = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const dia of Object.values(turnos)) {
+      for (const t of dia) {
+        for (const id of t.inscritos) {
+          counts[id] = (counts[id] || 0) + 1;
+        }
+      }
+    }
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+  }, [turnos]);
+
+  const alumnosById = Object.fromEntries(alumnos.map((a) => [a.id, a]));
+
   const proximosTurnos = useMemo(() => {
     const todos = Object.values(turnos).flat();
     return todos.slice(0, 5).sort((a, b) => a.hora.localeCompare(b.hora));
   }, [turnos]);
 
-  const ultimosPagos = mockPagos
+  const ultimosPagos = pagos
     .filter((p) => p.estado === "pagado")
     .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
     .slice(0, 4);
-
-  const alumnosById = Object.fromEntries(alumnos.map((a) => [a.id, a]));
 
   return (
     <div className="flex-1 overflow-y-auto p-6 lg:p-8">
@@ -223,28 +263,45 @@ export function DashboardView() {
               </div>
             </div>
 
-            {/* Próximos turnos */}
+            {/* Top actividades */}
             <div className="bg-surface border border-border rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Zap size={14} className="text-lime" />
-                <h3 className="text-text-hi font-semibold text-sm">Próximos turnos</h3>
+                <Activity size={14} className="text-lime" />
+                <h3 className="text-text-hi font-semibold text-sm">Top actividades</h3>
               </div>
               <div className="flex flex-col gap-2">
-                {proximosTurnos.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg border border-border">
+                {topActividades.map(([actividad, count], i) => (
+                  <div key={actividad} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg border border-border">
                     <div className="flex items-center gap-3">
-                      <span className="font-display text-text-hi text-lg w-14">{t.hora}</span>
-                      <div>
-                        <span className="text-text-hi text-xs font-medium block">{t.actividad}</span>
-                        <span className="text-text-muted text-[10px] font-mono">{t.coach}</span>
-                      </div>
+                      <span className="text-lime font-mono text-xs font-bold w-4">{i + 1}</span>
+                      <span className="text-text-hi text-xs font-medium">{actividad}</span>
                     </div>
-                    <div className="text-right">
-                      <span className="text-lime text-xs font-mono font-bold">{t.ocupados}</span>
-                      <span className="text-text-muted text-[10px] font-mono">/{t.cupo}</span>
-                    </div>
+                    <span className="text-text-muted text-[10px] font-mono">{count} inscritos</span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Top alumnos */}
+            <div className="bg-surface border border-border rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Award size={14} className="text-lime" />
+                <h3 className="text-text-hi font-semibold text-sm">Top alumnos</h3>
+              </div>
+              <div className="flex flex-col gap-2">
+                {topAlumnos.map(([id, count], i) => {
+                  const al = alumnosById[id];
+                  if (!al) return null;
+                  return (
+                    <div key={id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg border border-border">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lime font-mono text-xs font-bold w-4">{i + 1}</span>
+                        <span className="text-text-hi text-xs font-medium">{al.nombre}</span>
+                      </div>
+                      <span className="text-text-muted text-[10px] font-mono">{count} turnos</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -276,6 +333,9 @@ export function DashboardView() {
                   </div>
                 );
               })}
+              {ultimosPagos.length === 0 && (
+                <p className="text-text-muted text-sm text-center py-4">Sin pagos registrados</p>
+              )}
             </div>
           </div>
 
@@ -302,6 +362,9 @@ export function DashboardView() {
                   </span>
                 </div>
               ))}
+              {alumnos.filter((a) => a.estado === "vencido").length === 0 && (
+                <p className="text-text-muted text-sm text-center py-4">Sin planes vencidos</p>
+              )}
             </div>
           </div>
         </div>
