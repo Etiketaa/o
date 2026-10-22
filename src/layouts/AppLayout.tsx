@@ -3,7 +3,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { Sidebar } from "@/components/Sidebar";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { useAuthStore } from "@/stores/authStore";
-import { Calendar, CalendarCheck, CalendarDays, User, Users, ClipboardCheck, LayoutDashboard, Wallet, Settings } from "lucide-react";
+import { Calendar, CalendarCheck, CalendarDays, User, Users, ClipboardCheck, LayoutDashboard, Wallet, Settings, TrendingUp } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
@@ -15,6 +15,7 @@ interface NavItem {
 const ALUMNO_NAV: NavItem[] = [
   { id: "reservar", label: "Reservar", icon: Calendar },
   { id: "mis-turnos", label: "Mis turnos", icon: CalendarCheck },
+  { id: "progreso", label: "Progreso", icon: TrendingUp },
   { id: "perfil", label: "Perfil", icon: User },
 ];
 

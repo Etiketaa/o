@@ -9,6 +9,7 @@ import { LandingView } from "@/views/landing/LandingView";
 import { ReservarView } from "@/views/alumno/ReservarView";
 import { MisTurnosView } from "@/views/alumno/MisTurnosView";
 import { PerfilView } from "@/views/alumno/PerfilView";
+import { ProgresoView } from "@/views/alumno/ProgresoView";
 import { AgendaView } from "@/views/admin/AgendaView";
 import { AlumnosView } from "@/views/admin/AlumnosView";
 import { ControlView } from "@/views/admin/ControlView";
@@ -46,6 +47,7 @@ function AppContent() {
   switch (activeTab) {
     case "reservar": return <ReservarView />;
     case "mis-turnos": return <MisTurnosView />;
+    case "progreso": return <ProgresoView />;
     case "perfil": return <PerfilView />;
     default: return <ReservarView />;
   }

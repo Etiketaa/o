@@ -43,6 +43,10 @@
   --color-warn: #d8b46a;
   --color-steel: #7d94ad;
 
+  /* ---- Amarillo fluorescente: acento brutalista (CTAs, estados activos) ---- */
+  --color-neon: #ccff00;
+  --color-neon-dim: #99b300;
+
   /* ---- Niveles de recompensa (escala de plata) ---- */
   --color-nivel-acero: #8b929b;
   --color-nivel-plata: #d9dee4;
@@ -179,6 +183,75 @@ html {
   );
   background-size: 800px 100%;
   animation: shimmer 1.5s infinite linear;
+}
+
+/* ============================================
+   Utilidades brutalistas (OZ Entrenamiento)
+   Bordes gruesos, sombras duras, acento neón.
+   ============================================ */
+
+/* Borde grueso brutalista en plata */
+.brutal-border {
+  border: 3px solid var(--color-border-hi);
+}
+
+/* Borde grueso en amarillo neón (estado activo / CTA) */
+.brutal-border-neon {
+  border: 3px solid var(--color-neon);
+}
+
+/* Sombra dura brutalista (offset sin blur excesivo) */
+.brutal-shadow {
+  box-shadow: 6px 6px 0 0 var(--color-border-hi);
+}
+
+.brutal-shadow-neon {
+  box-shadow: 6px 6px 0 0 var(--color-neon);
+}
+
+/* Botón brutalista: texto mayúscula, borde grueso, área táctil ≥44px */
+.brutal-btn {
+  @apply min-h-11 min-w-11 rounded-none uppercase tracking-wider font-mono text-xs;
+  border: 3px solid var(--color-border-hi);
+  background: transparent;
+  color: var(--color-text-hi);
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
+  cursor: pointer;
+}
+
+.brutal-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 0 var(--color-border-hi);
+}
+
+.brutal-btn-neon {
+  border-color: var(--color-neon);
+  color: var(--color-neon);
+}
+
+.brutal-btn-neon:active {
+  box-shadow: 4px 4px 0 0 var(--color-neon);
+  transform: translate(2px, 2px);
+}
+
+/* Tarjeta brutalista: fondo negro, borde grueso, sombra dura */
+.brutal-card {
+  background: var(--color-ink);
+  border: 3px solid var(--color-border-hi);
+  box-shadow: 6px 6px 0 0 var(--color-border-hi);
+}
+
+.brutal-card-neon {
+  border-color: var(--color-neon);
+  box-shadow: 6px 6px 0 0 var(--color-neon);
+}
+
+/* Texto con degradado neón */
+.neon-text {
+  background: linear-gradient(180deg, #ffffff 0%, #e2e6ea 40%, #b3d900 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* Reduced motion preferences */

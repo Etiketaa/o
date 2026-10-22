@@ -18,15 +18,15 @@ export function Sidebar({ items }: SidebarProps) {
   const { activeTab, setActiveTab } = useUIStore();
 
   return (
-    <div className="w-64 h-full bg-surface border-r border-border flex flex-col">
+    <div className="w-64 h-full bg-ink border-r-4 border-border flex flex-col">
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-border">
+      <div className="px-6 py-6 border-b-4 border-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-chrome flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-chrome flex items-center justify-center">
             <Dumbbell size={20} className="text-bg" />
           </div>
           <div className="flex flex-col leading-none">
-            <span className="font-display text-text-hi text-xl tracking-[0.1em]">
+            <span className="font-display neon-text text-xl tracking-[0.1em]">
               OZ
             </span>
             <span className="text-[9px] tracking-[0.25em] uppercase text-text-muted">
@@ -45,10 +45,10 @@ export function Sidebar({ items }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-none transition-all text-left border-l-4 border-transparent ${
                 active
-                  ? "bg-chrome/10 text-chrome"
-                  : "text-text-muted hover:text-text-hi hover:bg-surface-hi"
+                  ? "text-neon brutal-border-neon"
+                  : "text-text-muted hover:text-text-hi hover:border-l-4 hover:border-border-hi"
               }`}
             >
               <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
@@ -59,11 +59,11 @@ export function Sidebar({ items }: SidebarProps) {
       </nav>
 
       {/* User info */}
-      <div className="px-4 py-4 border-t border-border">
+      <div className="px-4 py-4 border-t-4 border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-chrome/20 flex items-center justify-center shrink-0">
-              <span className="text-chrome text-xs font-bold">
+            <div className="w-8 h-8 border-4 border-chrome flex items-center justify-center shrink-0">
+              <span className="text-neon text-xs font-bold">
                 {user?.nombre?.charAt(0) || "U"}
               </span>
             </div>
@@ -79,7 +79,7 @@ export function Sidebar({ items }: SidebarProps) {
           <button
             onClick={logout}
             aria-label="Cerrar sesión"
-            className="p-2 rounded-lg text-text-muted hover:text-text-hi hover:bg-surface-hi transition-all"
+            className="p-2 rounded-none border-2 border-border text-text-muted hover:text-neon hover:border-neon transition-all"
             title="Cerrar sesión"
           >
             <LogOut size={16} />
