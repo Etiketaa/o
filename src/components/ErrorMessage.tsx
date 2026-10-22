@@ -10,7 +10,7 @@ interface ErrorMessageProps {
  */
 export function ErrorMessage({ message, variant = "error" }: ErrorMessageProps) {
   if (!message) return null;
-  const color = variant === "error" ? "var(--color-danger)" : "var(--color-lime)";
+  const color = variant === "error" ? "var(--color-danger)" : "var(--color-chrome)";
 
   return (
     <p

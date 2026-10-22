@@ -27,7 +27,7 @@ export function BottomNav({ items }: BottomNavProps) {
             aria-current={active ? "page" : undefined}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${
               active
-                ? "text-lime bg-lime/5"
+                ? "text-chrome bg-chrome/5"
                 : "text-text-muted hover:text-text-hi"
             }`}
           >

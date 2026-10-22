@@ -1,28 +1,62 @@
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
 
+/* ============================================
+   OZ ENTRENAMIENTO — sistema visual
+   Paleta: NEGRO / PLATA / BLANCO
+   ============================================ */
 @theme {
-  --color-bg: #0a0c0f;
-  --color-surface: #12151a;
-  --color-surface-hi: #1a1e25;
-  --color-surface-hi-2: #222830;
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-lime: #d4ff3d;
-  --color-lime-dim: #8fa83a;
-  --color-steel: #5b7c99;
-  --color-text-hi: #f2f3f0;
-  --color-text-mid: #b8bcc4;
-  --color-text-muted: #6b7280;
-  --color-danger: #ff5c5c;
+  /* ---- Negro: superficies, de más profundo a más elevado ---- */
+  --color-black: #000000;
+  --color-ink: #060607;
+  --color-bg: #060607;            /* alias de ink (compat con vistas viejas) */
+  --color-ink-2: #0d0e10;
+  --color-surface: #0d0e10;       /* alias de ink-2 */
+  --color-ink-3: #15171a;
+  --color-ink-3: #15171a;
+  --color-surface-hi: #15171a;    /* alias de ink-3 */
+  --color-ink-4: #1e2125;
+
+  /* ---- Plata: bordes, separadores y texto ---- */
+  --color-silver-100: #ffffff;
+  --color-silver-200: #eef0f3;
+  --color-silver-300: #ccd1d8;
+  --color-silver-400: #9ba2ab;
+  --color-silver-500: #737a83;
+  --color-silver-600: #4e545b;
+  --color-silver-700: #33383e;
+  --color-silver-800: #1f2226;
+
+  /* ---- Chrome: acento metálico ---- */
+  --color-chrome: #d9dee4;
+  --color-chrome-dim: #878e97;
+  --color-chrome-deep: #565c64;
+
+  --color-border: #24282d;
+  --color-border-hi: #3b4249;
+
+  --color-text-hi: #f3f5f7;
+  --color-text-mid: #b3b9c1;
+  --color-text-muted: #6f767e;
+
+  --color-danger: #ff5252;
+  --color-warn: #d8b46a;
+  --color-steel: #7d94ad;
+
+  /* ---- Niveles de recompensa (escala de plata) ---- */
+  --color-nivel-acero: #8b929b;
+  --color-nivel-plata: #d9dee4;
+  --color-nivel-platino: #f0f3f6;
+  --color-nivel-diamante: #ffffff;
 
   --font-display: "Bebas Neue", "Arial Narrow", sans-serif;
   --font-body: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 
-  --shadow-card: 0 4px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
-  --shadow-card-hover: 0 12px 40px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-glow-lime: 0 0 40px rgba(212,255,61,0.15);
-  --shadow-modal: 0 24px 80px rgba(0,0,0,0.6);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 14px 44px rgba(0, 0, 0, 0.6), 0 3px 10px rgba(0, 0, 0, 0.5);
+  --shadow-chrome: 0 0 32px rgba(217, 222, 228, 0.12);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.75);
 }
 
 * {
@@ -36,7 +70,7 @@ html,
 body,
 #root {
   height: 100%;
-  background-color: var(--color-bg);
+  background-color: var(--color-ink);
   font-family: var(--font-body);
   color: var(--color-text-hi);
   -webkit-font-smoothing: antialiased;
@@ -51,45 +85,98 @@ body,
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 30px var(--color-surface) inset !important;
+  -webkit-box-shadow: 0 0 0 30px var(--color-ink-2) inset !important;
   -webkit-text-fill-color: var(--color-text-hi) !important;
 }
 
-/* Focus ring for accessibility */
+/* Focus ring para accesibilidad */
 :focus-visible {
-  outline: 2px solid var(--color-lime);
+  outline: 2px solid var(--color-chrome);
   outline-offset: 3px;
   border-radius: 4px;
 }
 
-/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
 
-/* Selection color */
 ::selection {
-  background-color: rgba(212, 255, 61, 0.2);
+  background-color: rgba(217, 222, 228, 0.22);
   color: var(--color-text-hi);
+}
+
+/* ============================================
+   Utilidades de marca
+   ============================================ */
+
+/* Texto con degradado de cromo */
+.chrome-text {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #e2e6ea 40%,
+    #8f969f 51%,
+    #f4f6f9 62%,
+    #aab1b9 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Placa de acero: superficie con brillo lateral, para bloques CTA */
+.plate-steel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 42%),
+    linear-gradient(180deg, #191c20 0%, #0b0c0d 100%);
+  border: 1px solid var(--color-border-hi);
+}
+
+/* Textura de metal cepillado, muy sutil */
+.brushed {
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.022) 0px,
+    rgba(255, 255, 255, 0.022) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* Retícula de fondo, estilo plano técnico */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 /* Skeleton shimmer */
 @keyframes shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
 }
 .skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
   background-size: 800px 100%;
   animation: shimmer 1.5s infinite linear;
 }

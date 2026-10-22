@@ -1,160 +1,274 @@
 import { create } from "zustand";
-import type { Profile } from "@/types";
-import { supabase, isMockMode } from "@/lib/supabase";
-import { mockAdmin, mockAlumnoActual } from "@/lib/mock-data";
+import type { PlanType, Profile, SlotPreferido } from "@/types";
+import { supabase } from "@/lib/supabase";
+import { db, getMotor } from "@/lib/db";
+import {
+  autenticar,
+  borrarSesionLocal,
+  crearUsuario,
+  guardarSesionLocal,
+  leerSesionLocal,
+  listarUsuarios,
+} from "@/lib/db/auth-local";
+import { planDeFrecuencia, VECES_MES_POR_FRECUENCIA } from "@/lib/semilla";
+
+export interface DatosRegistro {
+  email: string;
+  password: string;
+  nombre: string;
+  telefono: string;
+  /** Veces por semana que el cliente se propone venir. */
+  frecuencia_semana: number;
+  franja: "manana" | "tarde" | "ambas";
+  slots_preferidos: SlotPreferido[];
+}
 
 interface AuthState {
   user: Profile | null;
   loading: boolean;
   isAuthenticated: boolean;
+  /** En modo local: todavía no hay ninguna cuenta y hay que crear al profesor. */
+  necesitaSetup: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
-  signup: (email: string, password: string, nombre: string, telefono: string) => Promise<{ error?: string }>;
-  loginAs: (role: "admin" | "alumno") => void;
+  signup: (datos: DatosRegistro) => Promise<{ error?: string }>;
+  crearCuentaProfesor: (datos: DatosRegistro) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   loadSession: () => Promise<void>;
 }
 
-async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
-  if (error) {
-    console.error("[fetchProfile] Error:", error.message, error.code);
-    return null;
-  }
-  return data as Profile;
-}
-
-async function createProfile(user: { id: string; email?: string; user_metadata?: Record<string, unknown> }): Promise<Profile | null> {
-  const nombre = (user.user_metadata?.nombre as string) || user.email || "Sin nombre";
-  const telefono = (user.user_metadata?.telefono as string) || "";
-  const role = (user.user_metadata?.role as string) || "alumno";
-  const plan = (user.user_metadata?.plan as string) || "2x semana";
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .insert({
-      id: user.id,
-      email: user.email || "",
-      nombre,
-      telefono,
-      role,
-      plan,
-      estado: "activo",
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error("[createProfile] Error:", error.message);
-    return null;
-  }
-  return data as Profile;
+function perfilDesdeUsuarioLocal(
+  usuario: { id: string; email: string; nombre: string; telefono: string; role: "admin" | "alumno" },
+  extras: Partial<Profile> = {},
+): Profile {
+  const plan: PlanType = extras.plan ?? planDeFrecuencia(extras.frecuencia_semana ?? 2);
+  return {
+    id: usuario.id,
+    email: usuario.email,
+    nombre: usuario.nombre,
+    role: usuario.role,
+    plan,
+    estado: "activo",
+    telefono: usuario.telefono,
+    frecuencia_semana: extras.frecuencia_semana ?? 2,
+    veces_mes_objetivo:
+      extras.veces_mes_objetivo ?? VECES_MES_POR_FRECUENCIA[extras.frecuencia_semana ?? 2] ?? 8,
+    franja: extras.franja ?? "ambas",
+    slots_preferidos: extras.slots_preferidos ?? [],
+    created_at: new Date().toISOString(),
+  };
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   loading: true,
   isAuthenticated: false,
+  necesitaSetup: false,
 
   login: async (email, password) => {
     set({ loading: true });
-    if (isMockMode) {
-      const user = email.includes("admin") ? mockAdmin : mockAlumnoActual;
-      set({ user, isAuthenticated: true, loading: false });
-      return {};
-    }
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      console.error("[login] Auth error:", error.message);
-      set({ loading: false });
-      return { error: error.message === "Invalid login credentials" ? "Email o contraseña incorrectos" : error.message };
-    }
-
-    console.log("[login] Auth OK, user id:", data.user.id);
-
-    let profile = await fetchProfile(data.user.id);
-
-    if (!profile) {
-      console.log("[login] Profile not found, creating...");
-      profile = await createProfile(data.user);
-    }
-
-    if (!profile) {
-      set({ loading: false });
-      return { error: "No se pudo cargar tu perfil. Contactá al administrador." };
-    }
-
-    console.log("[login] Profile loaded:", profile.nombre, profile.role);
-    set({ user: profile, isAuthenticated: true, loading: false });
-    return {};
-  },
-
-  signup: async (email, password, nombre, telefono) => {
-    set({ loading: true });
-    if (isMockMode) {
-      set({ user: mockAlumnoActual, isAuthenticated: true, loading: false });
-      return {};
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { nombre, telefono, role: "alumno", plan: "2x semana" },
-      },
-    });
-
-    if (error) {
-      console.error("[signup] Error:", error.message);
-      set({ loading: false });
-      return { error: error.message };
-    }
-
-    if (data.user && !data.session) {
-      set({ loading: false });
-      return { error: "" };
-    }
-
-    if (data.user) {
-      const profile = await fetchProfile(data.user.id) || await createProfile(data.user);
-      if (profile) {
-        set({ user: profile, isAuthenticated: true, loading: false });
+    if (getMotor() === "supabase") {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        set({ loading: false });
+        return {
+          error:
+            error.message === "Invalid login credentials"
+              ? "Correo o contraseña incorrectos"
+              : error.message,
+        };
       }
+      const perfil = await db.getPerfil(data.user.id);
+      if (!perfil) {
+        set({ loading: false });
+        return { error: "No se pudo cargar tu perfil. Contactá al profesor." };
+      }
+      set({ user: perfil, isAuthenticated: true, loading: false });
+      return {};
     }
-    set({ loading: false });
+
+    // --- motor local ---
+    const usuario = await autenticar(email, password);
+    if (!usuario) {
+      set({ loading: false });
+      return { error: "Correo o contraseña incorrectos" };
+    }
+    const perfil = (await db.getPerfil(usuario.id)) ?? perfilDesdeUsuarioLocal(usuario);
+    await db.savePerfil(perfil);
+    guardarSesionLocal(usuario.id);
+    set({ user: perfil, isAuthenticated: true, loading: false, necesitaSetup: false });
     return {};
   },
 
-  loginAs: (role) => {
-    const user = role === "admin" ? mockAdmin : mockAlumnoActual;
-    set({ user, isAuthenticated: true, loading: false });
+  signup: async (datos) => {
+    set({ loading: true });
+    const frecuencia = Math.max(1, Math.min(5, datos.frecuencia_semana));
+    const plan = planDeFrecuencia(frecuencia);
+    const vecesMes = VECES_MES_POR_FRECUENCIA[frecuencia] ?? frecuencia * 4;
+
+    if (getMotor() === "supabase") {
+      const { data, error } = await supabase.auth.signUp({
+        email: datos.email,
+        password: datos.password,
+        options: {
+          data: {
+            nombre: datos.nombre,
+            telefono: datos.telefono,
+            role: "alumno",
+            plan,
+            frecuencia_semana: frecuencia,
+            veces_mes_objetivo: vecesMes,
+            franja: datos.franja,
+            slots_preferidos: datos.slots_preferidos,
+          },
+        },
+      });
+
+      if (error) {
+        set({ loading: false });
+        return { error: error.message };
+      }
+
+      if (data.user && !data.session) {
+        set({ loading: false });
+        return { error: "" };
+      }
+
+      if (data.user) {
+        const perfil = (await db.getPerfil(data.user.id)) ?? null;
+        if (perfil) set({ user: perfil, isAuthenticated: true, loading: false });
+      }
+      set({ loading: false });
+      return {};
+    }
+
+    // --- motor local ---
+    try {
+      const usuario = await crearUsuario(
+        {
+          email: datos.email,
+          nombre: datos.nombre,
+          telefono: datos.telefono,
+          role: "alumno",
+        },
+        datos.password,
+      );
+      const perfil = perfilDesdeUsuarioLocal(usuario, {
+        frecuencia_semana: frecuencia,
+        veces_mes_objetivo: vecesMes,
+        franja: datos.franja,
+        slots_preferidos: datos.slots_preferidos,
+        plan,
+      });
+      await db.savePerfil(perfil);
+      guardarSesionLocal(usuario.id);
+      set({ user: perfil, isAuthenticated: true, loading: false, necesitaSetup: false });
+      return {};
+    } catch (error) {
+      set({ loading: false });
+      return { error: error instanceof Error ? error.message : "No se pudo crear la cuenta" };
+    }
+  },
+
+  crearCuentaProfesor: async (datos) => {
+    set({ loading: true });
+    const frecuencia = Math.max(1, Math.min(5, datos.frecuencia_semana));
+    const plan = planDeFrecuencia(frecuencia);
+    const vecesMes = VECES_MES_POR_FRECUENCIA[frecuencia] ?? frecuencia * 4;
+
+    try {
+      if (getMotor() === "supabase") {
+        const { data, error } = await supabase.auth.signUp({
+          email: datos.email,
+          password: datos.password,
+          options: {
+            data: {
+              nombre: datos.nombre,
+              telefono: datos.telefono,
+              role: "admin",
+              plan,
+              frecuencia_semana: frecuencia,
+              veces_mes_objetivo: vecesMes,
+              franja: datos.franja,
+              slots_preferidos: datos.slots_preferidos,
+            },
+          },
+        });
+        if (error) {
+          set({ loading: false });
+          return { error: error.message };
+        }
+        if (data.user) {
+          const perfil = (await db.getPerfil(data.user.id)) ?? null;
+          if (perfil) set({ user: perfil, isAuthenticated: true, loading: false });
+        }
+        set({ loading: false });
+        return {};
+      }
+
+      const usuario = await crearUsuario(
+        {
+          email: datos.email,
+          nombre: datos.nombre,
+          telefono: datos.telefono,
+          role: "admin",
+        },
+        datos.password,
+      );
+      const perfil = perfilDesdeUsuarioLocal(usuario, {
+        frecuencia_semana: frecuencia,
+        veces_mes_objetivo: vecesMes,
+        franja: datos.franja,
+        slots_preferidos: datos.slots_preferidos,
+        plan,
+      });
+      await db.savePerfil(perfil);
+      guardarSesionLocal(usuario.id);
+      set({ user: perfil, isAuthenticated: true, loading: false, necesitaSetup: false });
+      return {};
+    } catch (error) {
+      set({ loading: false });
+      return { error: error instanceof Error ? error.message : "No se pudo crear la cuenta" };
+    }
   },
 
   logout: async () => {
-    await supabase.auth.signOut();
+    if (getMotor() === "supabase") {
+      await supabase.auth.signOut();
+    }
+    borrarSesionLocal();
     set({ user: null, isAuthenticated: false, loading: false });
   },
 
   loadSession: async () => {
-    if (isMockMode) {
+    if (getMotor() === "supabase") {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        const perfil = await db.getPerfil(session.user.id);
+        if (perfil) {
+          set({ user: perfil, isAuthenticated: true, loading: false });
+          return;
+        }
+      }
       set({ loading: false });
       return;
     }
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      console.log("[loadSession] Session found, user id:", session.user.id);
-      let profile = await fetchProfile(session.user.id);
-      if (!profile) {
-        console.log("[loadSession] Profile not found, creating...");
-        profile = await createProfile(session.user);
-      }
-      if (profile) {
-        set({ user: profile, isAuthenticated: true });
+    // --- motor local ---
+    const usuarios = await listarUsuarios();
+    if (usuarios.length === 0) {
+      set({ loading: false, necesitaSetup: true });
+      return;
+    }
+
+    const id = leerSesionLocal();
+    if (id) {
+      const perfil = await db.getPerfil(id);
+      if (perfil) {
+        set({ user: perfil, isAuthenticated: true, loading: false });
+        return;
       }
     }
     set({ loading: false });

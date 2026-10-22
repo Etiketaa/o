@@ -1,17 +1,18 @@
-import type { DiaSemana, TurnoConReservas, Profile, Pago, Asistencia } from "@/types";
 
 export const COLORS = {
-  bg: "#0c0e11",
-  surface: "#16191e",
-  surfaceHi: "#1e2228",
-  border: "#2e343c",
-  lime: "#D4FF3D",
-  limeDim: "#8FA83A",
-  steel: "#5B7C99",
-  textHi: "#F2F3F0",
-  textMid: "#B8BCC4",
-  textMuted: "#7C8189",
-  danger: "#FF5C5C",
+  bg: "#060607",
+  surface: "#0d0e10",
+  surfaceHi: "#15171a",
+  border: "#24282d",
+  borderHi: "#3b4249",
+  chrome: "#D9DEE4",
+  chromeDim: "#878E97",
+  chromeDeep: "#565C64",
+  steel: "#7D94AD",
+  textHi: "#F3F5F7",
+  textMid: "#B3B9C1",
+  textMuted: "#6F767E",
+  danger: "#FF5252",
 };
 
 export const FONTS = {

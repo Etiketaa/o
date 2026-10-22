@@ -22,7 +22,7 @@ export function Sidebar({ items }: SidebarProps) {
       {/* Logo */}
       <div className="px-6 py-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-lime flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-chrome flex items-center justify-center">
             <Dumbbell size={20} className="text-bg" />
           </div>
           <div className="flex flex-col leading-none">
@@ -47,7 +47,7 @@ export function Sidebar({ items }: SidebarProps) {
               onClick={() => setActiveTab(item.id)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left ${
                 active
-                  ? "bg-lime/10 text-lime"
+                  ? "bg-chrome/10 text-chrome"
                   : "text-text-muted hover:text-text-hi hover:bg-surface-hi"
               }`}
             >
@@ -62,8 +62,8 @@ export function Sidebar({ items }: SidebarProps) {
       <div className="px-4 py-4 border-t border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-lime/20 flex items-center justify-center shrink-0">
-              <span className="text-lime text-xs font-bold">
+            <div className="w-8 h-8 rounded-full bg-chrome/20 flex items-center justify-center shrink-0">
+              <span className="text-chrome text-xs font-bold">
                 {user?.nombre?.charAt(0) || "U"}
               </span>
             </div>

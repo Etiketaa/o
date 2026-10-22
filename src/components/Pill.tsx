@@ -16,9 +16,9 @@ export function Pill({ active, children, onClick, size = "md" }: PillProps) {
       }`}
       style={{
         fontFamily: FONTS.body,
-        backgroundColor: active ? COLORS.lime : "transparent",
+        backgroundColor: active ? COLORS.chrome : "transparent",
         color: active ? "#101215" : COLORS.textMid,
-        border: `1px solid ${active ? COLORS.lime : COLORS.border}`,
+        border: `1px solid ${active ? COLORS.chrome : COLORS.border}`,
         fontWeight: active ? 700 : 500,
       }}
     >

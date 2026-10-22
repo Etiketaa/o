@@ -35,7 +35,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
             onClick={onClose}
             aria-label="Cerrar modal"
             style={{ color: COLORS.textMuted }}
-            className="ml-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
+            className="ml-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-chrome"
           >
             <X size={22} />
           </button>

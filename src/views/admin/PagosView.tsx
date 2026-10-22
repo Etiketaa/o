@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Search, Eye, CheckCircle, XCircle, FileImage, FileText, Download, Loader2, Filter } from "lucide-react";
+import { Search, Eye, CheckCircle, XCircle, FileImage, FileText, Download, Loader2 } from "lucide-react";
 import { StatusChip, Avatar, Modal } from "@/components";
-import { useTurnosStore } from "@/stores/turnosStore";
-import { usePagosStore, getPrecioPlan } from "@/stores/pagosStore";
+import { useGymStore } from "@/stores/gymStore";
+import { usePagosStore } from "@/stores/pagosStore";
 import { formatMoney, formatDate } from "@/lib/utils";
 import { exportPagosCSV } from "@/lib/csv";
 import type { Pago } from "@/types";
@@ -13,8 +13,8 @@ const MESES = [
 ];
 
 export function PagosView() {
-  const { alumnos } = useTurnosStore();
-  const { pagos, loadPagos, verificarPago, loading } = usePagosStore();
+  const { perfiles } = useGymStore();
+  const { pagos, loadPagos, verificarPago } = usePagosStore();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"todos" | "pagado" | "pendiente" | "verificando" | "vencido">("todos");
   const [selectedPago, setSelectedPago] = useState<Pago | null>(null);
@@ -25,13 +25,13 @@ export function PagosView() {
     loadPagos();
   }, []);
 
-  const alumnosById = Object.fromEntries(alumnos.map((a) => [a.id, a]));
+  const perfilesById = Object.fromEntries(perfiles.map((a) => [a.id, a]));
 
   const filtered = pagos
     .filter((p) => {
       if (filter !== "todos" && p.estado !== filter) return false;
       if (query) {
-        const al = alumnosById[p.alumno_id];
+        const al = perfilesById[p.alumno_id];
         if (!al || !al.nombre.toLowerCase().includes(query.toLowerCase())) return false;
       }
       return true;
@@ -57,7 +57,7 @@ export function PagosView() {
           <div className="mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[11px] tracking-[0.2em] uppercase text-lime mb-2 block font-medium">
+                <span className="text-[11px] tracking-[0.2em] uppercase text-chrome mb-2 block font-medium">
                   Pagos
                 </span>
                 <h2 className="font-display text-text-hi text-2xl tracking-wide">
@@ -66,10 +66,10 @@ export function PagosView() {
               </div>
               <button
                 onClick={() => {
-                  const alumnosById = Object.fromEntries(alumnos.map((a) => [a.id, a]));
-                  exportPagosCSV(pagos, alumnosById);
+                  const perfilesById = Object.fromEntries(perfiles.map((a) => [a.id, a]));
+                  exportPagosCSV(pagos, perfilesById);
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono uppercase tracking-wider border border-border hover:border-lime/30 text-text-muted hover:text-lime transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono uppercase tracking-wider border border-border hover:border-chrome/30 text-text-muted hover:text-chrome transition-all"
               >
                 <Download size={14} />
                 CSV
@@ -78,7 +78,7 @@ export function PagosView() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div className="bg-lime rounded-xl p-4 flex items-center justify-between">
+            <div className="bg-chrome rounded-xl p-4 flex items-center justify-between">
               <span className="text-bg text-sm font-semibold">Cobrado</span>
               <span className="text-bg text-lg font-mono font-bold">{formatMoney(totalPagado)}</span>
             </div>
@@ -104,7 +104,7 @@ export function PagosView() {
                   onClick={() => setFilter(f)}
                   className={`px-4 py-2 rounded-full text-[11px] font-mono uppercase tracking-wider shrink-0 transition-all ${
                     filter === f
-                      ? "bg-lime text-bg font-bold"
+                      ? "bg-chrome text-bg font-bold"
                       : "bg-transparent text-text-muted border border-border hover:border-text-muted"
                   }`}
                 >
@@ -139,7 +139,7 @@ export function PagosView() {
           </div>
 
           {filtered.map((p) => {
-            const al = alumnosById[p.alumno_id];
+            const al = perfilesById[p.alumno_id];
             return (
               <div
                 key={p.id}
@@ -173,7 +173,7 @@ export function PagosView() {
                       href={p.comprobante_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-lime hover:underline text-xs"
+                      className="inline-flex items-center gap-1 text-chrome hover:underline text-xs"
                     >
                       {p.comprobante_tipo === "pdf" ? (
                         <FileText size={14} />
@@ -189,13 +189,13 @@ export function PagosView() {
                 <div className="col-span-1">
                   <StatusChip estado={p.estado} size="sm" />
                   {p.verificado && (
-                    <span className="text-[10px] text-lime block mt-1">✓ Verificado</span>
+                    <span className="text-[10px] text-chrome block mt-1">✓ Verificado</span>
                   )}
                 </div>
                 <div className="col-span-2 flex justify-end gap-2">
                   <button
                     onClick={() => setSelectedPago(p)}
-                    className="p-2 rounded-lg border border-border hover:border-lime/30 transition-all"
+                    className="p-2 rounded-lg border border-border hover:border-chrome/30 transition-all"
                     aria-label="Ver detalles"
                   >
                     <Eye size={14} className="text-text-muted" />
@@ -225,15 +225,15 @@ export function PagosView() {
             </div>
 
             <div className="flex items-center gap-4">
-              {alumnosById[selectedPago.alumno_id] && (
-                <Avatar nombre={alumnosById[selectedPago.alumno_id].nombre} size="md" />
+              {perfilesById[selectedPago.alumno_id] && (
+                <Avatar nombre={perfilesById[selectedPago.alumno_id].nombre} size="md" />
               )}
               <div>
                 <p className="text-text-hi font-semibold">
-                  {alumnosById[selectedPago.alumno_id]?.nombre || "Desconocido"}
+                  {perfilesById[selectedPago.alumno_id]?.nombre || "Desconocido"}
                 </p>
                 <p className="text-text-muted text-xs">
-                  {alumnosById[selectedPago.alumno_id]?.email}
+                  {perfilesById[selectedPago.alumno_id]?.email}
                 </p>
               </div>
             </div>
@@ -266,9 +266,9 @@ export function PagosView() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {selectedPago.comprobante_tipo === "pdf" ? (
-                      <FileText size={16} className="text-lime" />
+                      <FileText size={16} className="text-chrome" />
                     ) : (
-                      <FileImage size={16} className="text-lime" />
+                      <FileImage size={16} className="text-chrome" />
                     )}
                     <span className="text-text-hi text-sm">
                       {selectedPago.comprobante_nombre || "Comprobante"}
@@ -314,7 +314,7 @@ export function PagosView() {
                   <button
                     onClick={() => handleVerificar(selectedPago, true)}
                     disabled={verificando}
-                    className="flex-1 py-3 rounded-xl text-center font-semibold text-sm bg-lime text-bg hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl text-center font-semibold text-sm bg-chrome text-bg hover:shadow-[0_4px_20px_rgba(212,255,61,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {verificando ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -334,7 +334,7 @@ export function PagosView() {
                 </>
               )}
               {selectedPago.estado === "pagado" && (
-                <div className="flex-1 py-3 rounded-xl text-center text-sm text-lime bg-lime/10 border border-lime/20">
+                <div className="flex-1 py-3 rounded-xl text-center text-sm text-chrome bg-chrome/10 border border-chrome/20">
                   Pago verificado y aprobado
                 </div>
               )}

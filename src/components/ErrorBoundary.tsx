@@ -39,7 +39,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
             onClick={() => location.reload()}
             className="mt-4 px-4 py-2 rounded-lg"
             style={{
-              backgroundColor: "var(--color-lime)",
+              backgroundColor: "var(--color-chrome)",
               color: "var(--color-bg)",
               fontWeight: 700,
             }}

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Dumbbell, Mail, Lock, Eye, EyeOff, User, Phone, ArrowLeft } from "lucide-react";
 import { COLORS, FONTS } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { isMockMode } from "@/lib/supabase";
 import { useToast } from "@/components/Toast";
 import { ErrorMessage } from "@/components/ErrorMessage";
 
@@ -21,7 +20,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const { login, signup, loginAs, loading } = useAuthStore();
+  const { login, signup, loading } = useAuthStore();
   const { pushToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,7 +36,15 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
         setError("Ingresá tu nombre");
         return;
       }
-      const result = await signup(email, password, nombre.trim(), telefono.trim());
+      const result = await signup({
+        email,
+        password,
+        nombre: nombre.trim(),
+        telefono: telefono.trim(),
+        frecuencia_semana: 2,
+        franja: "ambas",
+        slots_preferidos: [],
+      });
       if (result.error) {
         setError(result.error);
       } else {
@@ -68,7 +75,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
       <div className="flex flex-col items-center gap-3 mb-8">
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center"
-          style={{ backgroundColor: COLORS.lime }}
+          style={{ backgroundColor: COLORS.chrome }}
         >
           <Dumbbell size={32} color={COLORS.bg} />
         </div>
@@ -175,7 +182,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
           type="submit"
           disabled={loading}
           className="w-full py-3 rounded-lg text-center font-bold transition-opacity hover:opacity-90 disabled:opacity-50"
-          style={{ fontFamily: FONTS.body, color: COLORS.bg, backgroundColor: COLORS.lime }}
+          style={{ fontFamily: FONTS.body, color: COLORS.bg, backgroundColor: COLORS.chrome }}
         >
           {loading ? "Cargando..." : mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
         </button>
@@ -188,7 +195,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
             <button
               onClick={() => { setMode("register"); setError(""); setSuccess(""); }}
               aria-label="Cambiar a registro"
-              style={{ color: COLORS.lime }}
+              style={{ color: COLORS.chrome }}
               className="font-semibold"
             >
               Registrate
@@ -199,7 +206,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
             onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
             className="flex items-center gap-1 text-sm"
             aria-label="Volver al login"
-            style={{ color: COLORS.lime }}
+            style={{ color: COLORS.chrome }}
           >
             <ArrowLeft size={14} /> Volver al login
           </button>
@@ -209,20 +216,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
           <p className="text-[10px] font-mono text-text-muted text-center uppercase tracking-wider">
             Acceso rápido (demo)
           </p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => loginAs("admin")}
-              className="flex-1 py-3 rounded-lg text-center text-sm font-semibold border border-lime-dim text-lime hover:bg-lime/5 transition-all"
-            >
-              Demo Admin
-            </button>
-            <button
-              onClick={() => loginAs("alumno")}
-              className="flex-1 py-3 rounded-lg text-center text-sm font-semibold border border-lime-dim text-lime hover:bg-lime/5 transition-all"
-            >
-              Demo Alumno
-            </button>
-          </div>
+
         </div>
       </div>
     </div>

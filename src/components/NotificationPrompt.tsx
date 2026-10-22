@@ -16,8 +16,8 @@ export function NotificationPrompt() {
         className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors"
         style={{
           fontFamily: FONTS.mono,
-          color: COLORS.lime,
-          border: `1px solid ${COLORS.limeDim}`,
+          color: COLORS.chrome,
+          border: `1px solid ${COLORS.chromeDim}`,
           backgroundColor: "transparent",
         }}
       >

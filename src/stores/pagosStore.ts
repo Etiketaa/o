@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { Pago, PagoConfig, EstadoPago } from "@/types";
-import { mockPagos } from "@/lib/mock-data";
-import { isMockMode, supabase } from "@/lib/supabase";
+import { db, getMotor } from "@/lib/db";
+import { supabase } from "@/lib/supabase";
 
 interface PagosState {
   pagos: Pago[];
@@ -17,8 +17,8 @@ interface PagosState {
   getConfig: () => PagoConfig;
 }
 
-const DEFAULT_CONFIG: PagoConfig = {
-  id: "1",
+export const DEFAULT_CONFIG_PAGO: PagoConfig = {
+  id: "unica",
   dia_limite: 10,
   monto_base: 0,
   cvu: "0000032160000007890123",
@@ -32,154 +32,116 @@ const DEFAULT_CONFIG: PagoConfig = {
 const PRECIOS: Record<string, number> = {
   "2x semana": 12000,
   "3x semana": 14000,
-  "Full": 16000,
+  Full: 16000,
 };
 
+/** Convierte un archivo en data URL para guardarlo junto al pago (modo local). */
+function leerComoDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onload = () => resolve(String(lector.result));
+    lector.onerror = () => reject(lector.error);
+    lector.readAsDataURL(file);
+  });
+}
+
 export const usePagosStore = create<PagosState>((set, get) => ({
-  pagos: isMockMode ? mockPagos : [],
-  config: DEFAULT_CONFIG,
+  pagos: [],
+  config: DEFAULT_CONFIG_PAGO,
   loading: false,
 
   loadPagos: async () => {
-    if (isMockMode) {
-      set({ pagos: mockPagos });
-      return;
-    }
     set({ loading: true });
-    const { data } = await supabase
-      .from("pagos")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) set({ pagos: data as Pago[] });
-    set({ loading: false });
+    try {
+      const [pagos, config] = await Promise.all([db.listPagos(), db.getPagoConfig()]);
+      set({ pagos, config: config ?? DEFAULT_CONFIG_PAGO });
+    } finally {
+      set({ loading: false });
+    }
   },
 
   loadConfig: async () => {
-    if (isMockMode) {
-      set({ config: DEFAULT_CONFIG });
-      return;
-    }
-    const { data } = await supabase
-      .from("pago_config")
-      .select("*")
-      .eq("activo", true)
-      .single();
-    if (data) set({ config: data as PagoConfig });
+    const config = await db.getPagoConfig();
+    set({ config: config ?? DEFAULT_CONFIG_PAGO });
   },
 
-  getPagosByAlumno: (alumnoId: string) => {
-    const { pagos } = get();
-    return pagos.filter((p) => p.alumno_id === alumnoId);
-  },
+  getPagosByAlumno: (alumnoId) => get().pagos.filter((p) => p.alumno_id === alumnoId),
 
-  getEstadoPagoAlumno: (alumnoId: string, mes: number, anio: number): EstadoPago => {
-    const { pagos } = get();
-    const pago = pagos.find(
-      (p) => p.alumno_id === alumnoId && p.mes_pago === mes && p.anio_pago === anio
+  getEstadoPagoAlumno: (alumnoId, mes, anio) => {
+    const pago = get().pagos.find(
+      (p) => p.alumno_id === alumnoId && p.mes_pago === mes && p.anio_pago === anio,
     );
-    
     if (!pago) return "no_registrado";
     if (pago.estado === "pagado") return "pagado";
     if (pago.comprobante_url) return "verificando";
     return "pendiente";
   },
 
-  subirComprobante: async (pagoId: string, file: File): Promise<string | null> => {
-    if (isMockMode) return null;
+  subirComprobante: async (pagoId, file) => {
+    const tipo = file.type.startsWith("image/") ? "imagen" : "pdf";
+    let comprobanteUrl: string;
 
-    const fileExt = file.name.split(".").pop();
-    const filePath = `comprobantes/${pagoId}/${Date.now()}.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("comprobantes")
-      .upload(filePath, file);
-
-    if (uploadError) {
-      console.error("Error subiendo comprobante:", uploadError);
-      return null;
+    if (getMotor() === "supabase") {
+      const extension = file.name.split(".").pop();
+      const ruta = `comprobantes/${pagoId}/${Date.now()}.${extension}`;
+      const { error } = await supabase.storage.from("comprobantes").upload(ruta, file);
+      if (error) {
+        console.error("Error subiendo comprobante:", error);
+        return null;
+      }
+      comprobanteUrl = supabase.storage.from("comprobantes").getPublicUrl(ruta).data.publicUrl;
+    } else {
+      try {
+        comprobanteUrl = await leerComoDataURL(file);
+      } catch (error) {
+        console.error("Error leyendo comprobante:", error);
+        return null;
+      }
     }
 
-    const { data: urlData } = supabase.storage
-      .from("comprobantes")
-      .getPublicUrl(filePath);
+    const pago = get().pagos.find((p) => p.id === pagoId);
+    if (!pago) return comprobanteUrl;
 
-    const comprobanteUrl = urlData.publicUrl;
-    const comprobanteTipo = file.type.startsWith("image/") ? "imagen" : "pdf";
-
-    await supabase
-      .from("pagos")
-      .update({
-        comprobante_url: comprobanteUrl,
-        comprobante_tipo: comprobanteTipo,
-        comprobante_nombre: file.name,
-      })
-      .eq("id", pagoId);
-
-    const { pagos } = get();
-    set({
-      pagos: pagos.map((p) =>
-        p.id === pagoId
-          ? {
-              ...p,
-              comprobante_url: comprobanteUrl,
-              comprobante_tipo: comprobanteTipo,
-              comprobante_nombre: file.name,
-            }
-          : p
-      ),
-    });
+    const actualizado: Pago = {
+      ...pago,
+      comprobante_url: comprobanteUrl,
+      comprobante_tipo: tipo,
+      comprobante_nombre: file.name,
+    };
+    await db.savePago(actualizado);
+    set((state) => ({ pagos: state.pagos.map((p) => (p.id === pagoId ? actualizado : p)) }));
 
     return comprobanteUrl;
   },
 
-  verificarPago: async (pagoId: string, verificado: boolean, notas?: string) => {
-    if (isMockMode) return;
+  verificarPago: async (pagoId, verificado, notas) => {
+    const pago = get().pagos.find((p) => p.id === pagoId);
+    if (!pago) return;
 
-    await supabase
-      .from("pagos")
-      .update({
-        verificado,
-        verificado_at: new Date().toISOString(),
-        notas_admin: notas,
-        estado: verificado ? "pagado" : "pendiente",
-      })
-      .eq("id", pagoId);
-
-    const { pagos } = get();
-    set({
-      pagos: pagos.map((p) =>
-        p.id === pagoId
-          ? {
-              ...p,
-              verificado,
-              verificado_at: new Date().toISOString(),
-              notas_admin: notas,
-              estado: verificado ? ("pagado" as const) : ("pendiente" as const),
-            }
-          : p
-      ),
-    });
+    const actualizado: Pago = {
+      ...pago,
+      verificado,
+      verificado_at: new Date().toISOString(),
+      notas_admin: notas,
+      estado: verificado ? "pagado" : "pendiente",
+    };
+    await db.savePago(actualizado);
+    set((state) => ({ pagos: state.pagos.map((p) => (p.id === pagoId ? actualizado : p)) }));
   },
 
   getDiasRestantes: () => {
-    const { config } = get();
+    const diaLimite = get().config?.dia_limite || 10;
     const hoy = new Date();
-    const diaLimite = config?.dia_limite || 10;
-    
     if (hoy.getDate() > diaLimite) {
       const proximoMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 1);
-      const fechaLimite = new Date(proximoMes.getFullYear(), proximoMes.getMonth(), diaLimite);
-      const diff = Math.ceil((fechaLimite.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-      return diff;
+      const limite = new Date(proximoMes.getFullYear(), proximoMes.getMonth(), diaLimite);
+      return Math.ceil((limite.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
     }
-    
-    const fechaLimite = new Date(hoy.getFullYear(), hoy.getMonth(), diaLimite);
-    return Math.ceil((fechaLimite.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+    const limite = new Date(hoy.getFullYear(), hoy.getMonth(), diaLimite);
+    return Math.ceil((limite.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
   },
 
-  getConfig: () => {
-    return get().config || DEFAULT_CONFIG;
-  },
+  getConfig: () => get().config ?? DEFAULT_CONFIG_PAGO,
 }));
 
 export function getPrecioPlan(plan: string): number {

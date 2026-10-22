@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
-import { useTurnosStore } from "@/stores/turnosStore";
+import { useGymStore } from "@/stores/gymStore";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { AppLayout } from "@/layouts/AppLayout";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -20,17 +20,13 @@ import { SettingsView } from "@/views/admin/SettingsView";
 function AppContent() {
   const { user } = useAuthStore();
   const { activeTab } = useUIStore();
-  const { loadTurnos, loadAlumnos, loadMisReservas } = useTurnosStore();
+  const { init } = useGymStore();
 
   useEffect(() => {
-    if (!user) return;
-    loadTurnos();
-    if (user.role === "alumno") {
-      loadMisReservas(user.id);
-    } else if (user.role === "admin") {
-      loadAlumnos();
-    }
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    // El store principal detecta el motor, siembra la configuración y materializa
+    // las sesiones de la semana. Es idempotente: si ya inicializó, no hace nada.
+    void init();
+  }, [init]);
 
   if (!user) return null;
 

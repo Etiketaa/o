@@ -5,8 +5,8 @@ describe("uiStore", () => {
   beforeEach(() => {
     useUIStore.setState({
       activeTab: "reservar",
-      selectedDay: "Lun",
-      selectedTurnoId: null,
+      selectedFecha: "2026-10-21",
+      selectedSesionId: null,
       isSidebarOpen: false,
     });
   });
@@ -14,8 +14,8 @@ describe("uiStore", () => {
   it("has correct initial state", () => {
     const state = useUIStore.getState();
     expect(state.activeTab).toBe("reservar");
-    expect(state.selectedDay).toBe("Lun");
-    expect(state.selectedTurnoId).toBeNull();
+    expect(state.selectedFecha).toBe("2026-10-21");
+    expect(state.selectedSesionId).toBeNull();
   });
 
   it("setActiveTab updates tab", () => {
@@ -23,14 +23,14 @@ describe("uiStore", () => {
     expect(useUIStore.getState().activeTab).toBe("mis-turnos");
   });
 
-  it("setSelectedDay updates day", () => {
-    useUIStore.getState().setSelectedDay("Mar");
-    expect(useUIStore.getState().selectedDay).toBe("Mar");
+  it("setSelectedFecha updates the date", () => {
+    useUIStore.getState().setSelectedFecha("2026-10-23");
+    expect(useUIStore.getState().selectedFecha).toBe("2026-10-23");
   });
 
-  it("setSelectedTurnoId updates turno", () => {
-    useUIStore.getState().setSelectedTurnoId("t1");
-    expect(useUIStore.getState().selectedTurnoId).toBe("t1");
+  it("setSelectedSesionId updates the session", () => {
+    useUIStore.getState().setSelectedSesionId("s1");
+    expect(useUIStore.getState().selectedSesionId).toBe("s1");
   });
 
   it("toggleSidebar toggles", () => {

@@ -7,7 +7,7 @@ export function Header() {
   return (
     <div className="flex items-center justify-between px-5 pt-[calc(1.25rem+env(safe-area-inset-top,0px))] pb-4">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-lime flex items-center justify-center">
+        <div className="w-9 h-9 rounded-lg bg-chrome flex items-center justify-center">
           <Dumbbell size={18} className="text-bg" />
         </div>
         <div className="flex flex-col leading-none">

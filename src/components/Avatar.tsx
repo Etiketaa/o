@@ -15,7 +15,7 @@ export function Avatar({ nombre, size = "md", className = "" }: AvatarProps) {
       style={{
         backgroundColor: "var(--color-surface-hi)",
         border: "1px solid var(--color-border)",
-        color: "var(--color-lime)",
+        color: "var(--color-chrome)",
         fontFamily: "var(--font-mono)",
       }}
     >

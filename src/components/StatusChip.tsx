@@ -6,12 +6,12 @@ interface StatusChipProps {
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string; border: string }> = {
-  activo: { label: "ACTIVO", color: COLORS.lime, border: COLORS.limeDim },
+  activo: { label: "ACTIVO", color: COLORS.chrome, border: COLORS.chromeDim },
   vencido: { label: "VENCIDO", color: COLORS.danger, border: COLORS.danger },
-  activa: { label: "ACTIVA", color: COLORS.lime, border: COLORS.limeDim },
+  activa: { label: "ACTIVA", color: COLORS.chrome, border: COLORS.chromeDim },
   vencida: { label: "VENCIDA", color: COLORS.danger, border: COLORS.danger },
   cancelada: { label: "CANCELADA", color: COLORS.textMuted, border: COLORS.border },
-  pagado: { label: "PAGADO", color: COLORS.lime, border: COLORS.limeDim },
+  pagado: { label: "PAGADO", color: COLORS.chrome, border: COLORS.chromeDim },
   pendiente: { label: "PENDIENTE", color: COLORS.steel, border: COLORS.steel },
 };
 

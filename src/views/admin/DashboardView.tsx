@@ -1,374 +1,485 @@
-import { useMemo, useEffect } from "react";
-import { Users, Calendar, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight, Clock, Zap, Activity, Award } from "lucide-react";
-import { formatMoney } from "@/lib/utils";
-import { useTurnosStore } from "@/stores/turnosStore";
+import { useCallback, useEffect, useMemo } from "react";
+import {
+  CalendarClock,
+  Check,
+  Clock,
+  DollarSign,
+  Phone,
+  TrendingUp,
+  UserPlus,
+  Users,
+  X,
+} from "lucide-react";
+import { Avatar, PlateMeter, useToast } from "@/components";
+import { useGymStore } from "@/stores/gymStore";
 import { usePagosStore } from "@/stores/pagosStore";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
+import { hoyISO, diaSemanaDe, semanaDe, sumarDias } from "@/lib/fechas";
+import { NOMBRES_DIA_CORTO } from "@/lib/horarios";
+import { formatMoney } from "@/lib/utils";
+import { DIAS, type DiaSemana, type Inscripcion, type Sesion } from "@/types";
 
-function StatCard({ label, value, icon: Icon, trend, trendLabel, accent }: {
-  label: string;
-  value: string | number;
-  icon: React.ElementType;
-  trend?: "up" | "down";
-  trendLabel?: string;
-  accent?: boolean;
-}) {
+interface KpiProps {
+  etiqueta: string;
+  valor: string | number;
+  icono: React.ElementType;
+  destacado?: boolean;
+}
+
+function Kpi({ etiqueta, valor, icono: Icono, destacado }: KpiProps) {
   return (
-    <div className={`relative rounded-2xl p-5 overflow-hidden transition-all hover:scale-[1.02] ${
-      accent ? "bg-lime text-bg" : "bg-surface border border-border"
-    }`}>
-      {accent && <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-8 translate-x-8" />}
-      <div className="relative">
-        <div className="flex items-center justify-between mb-4">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-            accent ? "bg-bg/20" : "bg-lime/10"
-          }`}>
-            <Icon size={18} className={accent ? "text-bg" : "text-lime"} />
-          </div>
-          {trend && trendLabel && (
-            <div className={`flex items-center gap-1 text-xs font-medium ${
-              trend === "up" ? "text-lime" : "text-danger"
-            }`}>
-              {trend === "up" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-              {trendLabel}
-            </div>
-          )}
-        </div>
-        <div className={`font-display text-3xl sm:text-4xl tracking-wide mb-1 overflow-hidden ${accent ? "text-bg" : "text-text-hi"}`}>
-          {value}
-        </div>
-        <div className={`text-[11px] font-mono uppercase tracking-wider ${
-          accent ? "text-bg/70" : "text-text-muted"
-        }`}>
-          {label}
-        </div>
-      </div>
+    <div
+      className={`flex flex-col gap-2 rounded-2xl border p-4 ${
+        destacado ? "border-chrome/40 bg-chrome/10" : "border-border bg-ink-2"
+      }`}
+    >
+      <span className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-text-muted">
+        <Icono size={14} className={destacado ? "text-chrome" : "text-chrome-dim"} aria-hidden="true" />
+        {etiqueta}
+      </span>
+      <span
+        className={`font-display text-3xl tracking-wide ${
+          destacado ? "text-chrome" : "text-text-hi"
+        }`}
+      >
+        {valor}
+      </span>
     </div>
   );
 }
 
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
-  if (!active || !payload?.length) return null;
+interface SeccionProps {
+  titulo: string;
+  children: React.ReactNode;
+  extra?: React.ReactNode;
+}
+
+function Seccion({ titulo, children, extra }: SeccionProps) {
   return (
-    <div className="bg-bg border border-border rounded-lg px-3 py-2 shadow-xl">
-      <p className="text-text-hi text-sm font-medium">{label}</p>
-      <p className="text-lime text-xs font-mono">{payload[0].value} asistentes</p>
-    </div>
+    <section className="rounded-2xl border border-border bg-ink-2 p-4 md:p-6">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="font-display text-xl tracking-wide text-text-hi uppercase">{titulo}</h2>
+        {extra}
+      </div>
+      {children}
+    </section>
   );
 }
 
 export function DashboardView() {
-  const { turnos, alumnos } = useTurnosStore();
+  const {
+    perfiles,
+    sesiones,
+    inscripciones,
+    asegurarSesiones,
+    cargarSesiones,
+    cargarInscripciones,
+    marcarAsistencia,
+  } = useGymStore();
   const { pagos, loadPagos } = usePagosStore();
+  const { pushToast } = useToast();
+
+  const hoy = hoyISO();
 
   useEffect(() => {
     loadPagos();
-  }, []);
+    cargarInscripciones();
+    // La semana en curso se materializa a partir de la grilla semanal.
+    const { inicio, fin } = semanaDe(hoy);
+    const fechas = Array.from({ length: 7 }, (_, i) => sumarDias(inicio, i));
+    void (async () => {
+      await asegurarSesiones(fechas);
+      await cargarSesiones(inicio, fin);
+    })();
+  }, [hoy, asegurarSesiones, cargarSesiones, cargarInscripciones, loadPagos]);
 
-  const stats = useMemo(() => {
-    const alumnosActivos = alumnos.filter((a) => a.estado === "activo").length;
-    const alumnosVencidos = alumnos.filter((a) => a.estado === "vencido").length;
+  const clientes = useMemo(() => perfiles.filter((p) => p.role === "alumno"), [perfiles]);
 
-    const hoy = new Date();
-    const mesActual = hoy.getMonth() + 1;
-    const anioActual = hoy.getFullYear();
+  const sesionesHoy = useMemo(
+    () => sesiones.filter((s) => s.fecha === hoy).sort((a, b) => a.hora.localeCompare(b.hora)),
+    [sesiones, hoy],
+  );
 
-    const ingresosMes = pagos
-      .filter((p) => p.estado === "pagado" && p.mes_pago === mesActual && p.anio_pago === anioActual)
-      .reduce((s, p) => s + p.monto, 0);
-    const ingresosPendientes = pagos
-      .filter((p) => p.estado === "pendiente" && p.mes_pago === mesActual && p.anio_pago === anioActual)
-      .reduce((s, p) => s + p.monto, 0);
+  const sesionesPorId = useMemo(() => new Map(sesiones.map((s) => [s.id, s])), [sesiones]);
 
-    let turnosSemana = 0;
-    let asistentesSemana = 0;
-    for (const dia of Object.values(turnos)) {
-      for (const t of dia) {
-        turnosSemana++;
-        asistentesSemana += t.ocupados;
-      }
+  const inscripcionesPorSesion = useMemo(() => {
+    const mapa = new Map<string, Inscripcion[]>();
+    for (const inscripcion of inscripciones) {
+      const lista = mapa.get(inscripcion.sesion_id) ?? [];
+      lista.push(inscripcion);
+      mapa.set(inscripcion.sesion_id, lista);
     }
+    return mapa;
+  }, [inscripciones]);
 
-    const capacidadTotal = Object.values(turnos).flat().reduce((s, t) => s + t.cupo, 0);
-    const ocupacionPromedio = capacidadTotal > 0 ? Math.round((asistentesSemana / capacidadTotal) * 100) : 0;
+  const ocupadosDe = useCallback(
+    (sesion: Sesion) =>
+      (inscripcionesPorSesion.get(sesion.id) ?? []).filter((i) => i.estado !== "cancelada").length,
+    [inscripcionesPorSesion],
+  );
 
-    return { alumnosActivos, alumnosVencidos, totalAlumnos: alumnos.length, turnosSemana, asistentesSemana, ingresosMes, ingresosPendientes, ocupacionPromedio };
-  }, [turnos, alumnos, pagos]);
+  const asistenciaHoy = useMemo(
+    () =>
+      inscripciones.filter((i) => {
+        const sesion = sesionesPorId.get(i.sesion_id);
+        return sesion?.fecha === hoy && i.estado === "asistio";
+      }).length,
+    [inscripciones, sesionesPorId, hoy],
+  );
 
-  const chartData = useMemo(() => {
-    return ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((dia) => {
-      const dayTurnos = turnos[dia as keyof typeof turnos] || [];
-      return {
-        name: dia,
-        asistentes: dayTurnos.reduce((s, t) => s + t.ocupados, 0),
-        capacidad: dayTurnos.reduce((s, t) => s + t.cupo, 0),
-      };
-    });
-  }, [turnos]);
+  const confirmadosHoy = useMemo(
+    () =>
+      inscripciones.filter((i) => {
+        const sesion = sesionesPorId.get(i.sesion_id);
+        return sesion?.fecha === hoy && i.estado === "confirmada";
+      }).length,
+    [inscripciones, sesionesPorId, hoy],
+  );
 
-  const topActividades = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const dia of Object.values(turnos)) {
-      for (const t of dia) {
-        counts[t.actividad] = (counts[t.actividad] || 0) + t.ocupados;
-      }
+  const ingresosMes = useMemo(() => {
+    const ahora = new Date();
+    const mes = ahora.getMonth() + 1;
+    const anio = ahora.getFullYear();
+    return pagos
+      .filter((p) => p.estado === "pagado" && p.mes_pago === mes && p.anio_pago === anio)
+      .reduce((suma, p) => suma + p.monto, 0);
+  }, [pagos]);
+
+  const nuevosDelMes = useMemo(() => {
+    const prefijo = hoy.slice(0, 7);
+    return clientes
+      .filter((c) => (c.created_at ?? "").startsWith(prefijo))
+      .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+  }, [clientes, hoy]);
+
+  const vencidos = useMemo(
+    () => clientes.filter((c) => c.estado === "vencido").sort((a, b) => a.nombre.localeCompare(b.nombre)),
+    [clientes],
+  );
+
+  const conPedidos = useMemo(
+    () =>
+      clientes
+        .filter((c) => (c.slots_preferidos ?? []).length > 0)
+        .sort((a, b) => a.nombre.localeCompare(b.nombre)),
+    [clientes],
+  );
+
+  const marcar = async (inscripcion: Inscripcion, estado: "asistio" | "faltó") => {
+    try {
+      await marcarAsistencia(inscripcion.id, estado);
+    } catch (error) {
+      pushToast(error instanceof Error ? error.message : "No se pudo marcar", "error");
     }
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 4);
-  }, [turnos]);
-
-  const topAlumnos = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const dia of Object.values(turnos)) {
-      for (const t of dia) {
-        for (const id of t.inscritos) {
-          counts[id] = (counts[id] || 0) + 1;
-        }
-      }
-    }
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-  }, [turnos]);
-
-  const alumnosById = Object.fromEntries(alumnos.map((a) => [a.id, a]));
-
-  const proximosTurnos = useMemo(() => {
-    const todos = Object.values(turnos).flat();
-    return todos.slice(0, 5).sort((a, b) => a.hora.localeCompare(b.hora));
-  }, [turnos]);
-
-  const ultimosPagos = pagos
-    .filter((p) => p.estado === "pagado")
-    .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-    .slice(0, 4);
+  };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+    <div className="flex-1 overflow-y-auto">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:px-6 md:pb-10 lg:px-8">
+        {/* Encabezado */}
+        <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-lime animate-pulse" />
-              <span className="text-[11px] tracking-[0.2em] uppercase text-lime font-medium">
-                Vista general
-              </span>
-            </div>
-            <h1 className="font-display text-text-hi text-3xl md:text-4xl lg:text-5xl tracking-wide">
+            <span className="mb-2 block font-mono text-xs uppercase tracking-widest text-chrome">
+              Vista general
+            </span>
+            <h1 className="chrome-text font-display text-4xl tracking-wide uppercase md:text-5xl">
               Dashboard
             </h1>
           </div>
-          <div className="flex items-center gap-2 text-text-muted text-sm">
-            <Clock size={14} />
-            <span className="font-mono text-xs">Última actualización: ahora</span>
-          </div>
+          <span className="hidden items-center gap-2 font-mono text-xs text-text-muted md:flex">
+            <Clock size={14} aria-hidden="true" />
+            {sesionesHoy.length} sesiones hoy
+          </span>
         </div>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            label="Alumnos activos"
-            value={stats.alumnosActivos}
-            icon={Users}
-            trend="up"
-            trendLabel={`+${stats.totalAlumnos} total`}
-          />
-          <StatCard
-            label="Turnos / semana"
-            value={stats.turnosSemana}
-            icon={Calendar}
-          />
-          <StatCard
-            label="Asistentes / semana"
-            value={stats.asistentesSemana}
-            icon={TrendingUp}
-            trend="up"
-            trendLabel={`${stats.ocupacionPromedio}% ocupación`}
-          />
-          <StatCard
-            label="Ingresos mes"
-            value={formatMoney(stats.ingresosMes)}
-            icon={DollarSign}
-            accent
-          />
+        {/* KPIs */}
+        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <Kpi etiqueta="Clientes activos" valor={clientes.filter((c) => c.estado === "activo").length} icono={Users} />
+          <Kpi etiqueta="Total clientes" valor={clientes.length} icono={Users} />
+          <Kpi etiqueta="Turnos de hoy" valor={sesionesHoy.length} icono={CalendarClock} />
+          <Kpi etiqueta="Asistencia hoy" valor={asistenciaHoy} icono={TrendingUp} />
+          <Kpi etiqueta="Ingresos del mes" valor={formatMoney(ingresosMes)} icono={DollarSign} destacado />
+          <Kpi etiqueta="Clientes nuevos" valor={nuevosDelMes.length} icono={UserPlus} />
         </div>
 
-        {/* Main content grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Chart - 2 columns */}
-          <div className="lg:col-span-2 bg-surface border border-border rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-text-hi font-semibold text-sm mb-1">Asistencia semanal</h3>
-                <p className="text-text-muted text-xs">Asistentes por día de la semana</p>
-              </div>
-              <div className="flex items-center gap-4 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-lime" />
-                  <span className="text-text-muted">Asistentes</span>
-                </div>
-              </div>
-            </div>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} barSize={32} barGap={8}>
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "var(--color-text-muted)", fontSize: 11, fontFamily: "var(--font-mono)" }}
-                    dy={8}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "var(--color-text-muted)", fontSize: 10, fontFamily: "var(--font-mono)" }}
-                    width={35}
-                  />
-                  <Tooltip content={<CustomTooltip />} cursor={false} />
-                  <Bar dataKey="asistentes" radius={[6, 6, 0, 0]}>
-                    {chartData.map((_, i) => (
-                      <Cell key={i} fill={i % 2 === 0 ? "var(--color-lime)" : "var(--color-lime-dim)"} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Right sidebar */}
-          <div className="flex flex-col gap-6">
-            {/* Quick stats */}
-            <div className="bg-surface border border-border rounded-2xl p-6">
-              <h3 className="text-text-hi font-semibold text-sm mb-4">Resumen rápido</h3>
+        <div className="flex flex-col gap-4">
+          {/* Asistencia de hoy */}
+          <Seccion
+            titulo="Asistencia de hoy"
+            extra={
+              <span className="font-mono text-xs text-text-muted">
+                {asistenciaHoy} asistieron · {confirmadosHoy} sin marcar
+              </span>
+            }
+          >
+            {sesionesHoy.length === 0 ? (
+              <p className="py-8 text-center text-sm text-text-muted">
+                Hoy no hay clases programadas
+              </p>
+            ) : (
               <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between py-3 border-b border-border">
-                  <span className="text-text-muted text-sm">Alumnos activos</span>
-                  <span className="text-lime font-mono font-bold text-sm">{stats.alumnosActivos}</span>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-border">
-                  <span className="text-text-muted text-sm">Planes vencidos</span>
-                  <span className="text-danger font-mono font-bold text-sm">{stats.alumnosVencidos}</span>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-border">
-                  <span className="text-text-muted text-sm">Ocupación promedio</span>
-                  <span className="text-lime font-mono font-bold text-sm">{stats.ocupacionPromedio}%</span>
-                </div>
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-text-muted text-sm">Pendiente cobro</span>
-                  <span className="text-steel font-mono font-bold text-sm">{formatMoney(stats.ingresosPendientes)}</span>
-                </div>
-              </div>
-            </div>
+                {sesionesHoy.map((sesion) => {
+                  const lista = (inscripcionesPorSesion.get(sesion.id) ?? []).filter(
+                    (i) => i.estado !== "cancelada",
+                  );
+                  const ocupados = ocupadosDe(sesion);
 
-            {/* Top actividades */}
-            <div className="bg-surface border border-border rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Activity size={14} className="text-lime" />
-                <h3 className="text-text-hi font-semibold text-sm">Top actividades</h3>
-              </div>
-              <div className="flex flex-col gap-2">
-                {topActividades.map(([actividad, count], i) => (
-                  <div key={actividad} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg border border-border">
-                    <div className="flex items-center gap-3">
-                      <span className="text-lime font-mono text-xs font-bold w-4">{i + 1}</span>
-                      <span className="text-text-hi text-xs font-medium">{actividad}</span>
-                    </div>
-                    <span className="text-text-muted text-[10px] font-mono">{count} inscritos</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Top alumnos */}
-            <div className="bg-surface border border-border rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Award size={14} className="text-lime" />
-                <h3 className="text-text-hi font-semibold text-sm">Top alumnos</h3>
-              </div>
-              <div className="flex flex-col gap-2">
-                {topAlumnos.map(([id, count], i) => {
-                  const al = alumnosById[id];
-                  if (!al) return null;
                   return (
-                    <div key={id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg border border-border">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lime font-mono text-xs font-bold w-4">{i + 1}</span>
-                        <span className="text-text-hi text-xs font-medium">{al.nombre}</span>
+                    <div
+                      key={sesion.id}
+                      className="rounded-xl border border-border bg-ink p-4"
+                    >
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <span className="font-display text-2xl tracking-wide text-text-hi">
+                            {sesion.hora}
+                          </span>
+                          <div>
+                            <span className="block font-semibold text-text-hi">{sesion.actividad}</span>
+                            <span className="block font-mono text-xs text-text-muted">
+                              Coach {sesion.coach}
+                            </span>
+                          </div>
+                        </div>
+                        <PlateMeter ocupados={ocupados} total={sesion.cupo} />
                       </div>
-                      <span className="text-text-muted text-[10px] font-mono">{count} turnos</span>
+
+                      {lista.length === 0 ? (
+                        <p className="font-mono text-xs text-text-muted">Nadie anotado</p>
+                      ) : (
+                        <ul className="flex flex-col gap-2">
+                          {lista.map((inscripcion) => {
+                            const cliente = clientes.find((c) => c.id === inscripcion.alumno_id);
+                            const nombre = cliente?.nombre ?? "Cliente";
+                            const asistio = inscripcion.estado === "asistio";
+                            const falto = inscripcion.estado === "faltó";
+
+                            return (
+                              <li
+                                key={inscripcion.id}
+                                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-ink-2 px-3 py-2"
+                              >
+                                <div className="flex min-w-0 items-center gap-2">
+                                  <Avatar nombre={nombre} size="sm" />
+                                  <span className="truncate text-sm text-text-hi">{nombre}</span>
+                                  {inscripcion.feedback === "up" && (
+                                    <span className="font-mono text-xs text-chrome">+</span>
+                                  )}
+                                  {inscripcion.feedback === "down" && (
+                                    <span className="font-mono text-xs text-danger">−</span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  {asistio && (
+                                    <span className="rounded-full border border-chrome/40 px-2 py-0.5 font-mono text-xs uppercase tracking-widest text-chrome">
+                                      Asistió
+                                    </span>
+                                  )}
+                                  {falto && (
+                                    <span className="rounded-full border border-danger/40 px-2 py-0.5 font-mono text-xs uppercase tracking-widest text-danger">
+                                      Faltó
+                                    </span>
+                                  )}
+                                  {!asistio && !falto && (
+                                    <>
+                                      <button
+                                        onClick={() => marcar(inscripcion, "asistio")}
+                                        aria-label={`Marcar asistencia de ${nombre}`}
+                                        className="flex h-11 w-11 items-center justify-center rounded-xl border border-border text-text-muted transition-colors hover:border-chrome/50 hover:text-chrome"
+                                      >
+                                        <Check size={16} />
+                                      </button>
+                                      <button
+                                        onClick={() => marcar(inscripcion, "faltó")}
+                                        aria-label={`Marcar ausencia de ${nombre}`}
+                                        className="flex h-11 w-11 items-center justify-center rounded-xl border border-border text-text-muted transition-colors hover:border-danger/50 hover:text-danger"
+                                      >
+                                        <X size={16} />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
                     </div>
                   );
                 })}
               </div>
-            </div>
-          </div>
-        </div>
+            )}
+          </Seccion>
 
-        {/* Bottom section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Últimos pagos */}
-          <div className="bg-surface border border-border rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-text-hi font-semibold text-sm">Últimos pagos</h3>
-              <span className="text-lime text-xs font-mono">{ultimosPagos.length} registros</span>
-            </div>
-            <div className="flex flex-col gap-2">
-              {ultimosPagos.map((p) => {
-                const al = alumnosById[p.alumno_id];
-                return (
-                  <div key={p.id} className="flex items-center justify-between py-3 px-3 rounded-lg bg-bg border border-border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-lime/20 flex items-center justify-center">
-                        <span className="text-lime text-xs font-bold">{al?.nombre?.charAt(0) || "?"}</span>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {/* Horarios pedidos */}
+            <Seccion
+              titulo="Horarios pedidos"
+              extra={<span className="font-mono text-xs text-text-muted">{conPedidos.length}</span>}
+            >
+              {conPedidos.length === 0 ? (
+                <p className="py-6 text-center text-sm text-text-muted">
+                  Ningún cliente pidió horarios
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {conPedidos.slice(0, 8).map((cliente) => (
+                    <li
+                      key={cliente.id}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-ink px-3 py-2"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Avatar nombre={cliente.nombre} size="sm" />
+                        <div className="min-w-0">
+                          <span className="block truncate text-sm text-text-hi">{cliente.nombre}</span>
+                          <span className="block font-mono text-xs text-text-muted">
+                            {(cliente.slots_preferidos ?? [])
+                              .map((s) => `${NOMBRES_DIA_CORTO[s.dia].toLowerCase()} ${s.hora}`)
+                              .join(", ")}
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-text-hi text-sm font-medium block">{al?.nombre || "N/A"}</span>
-                        <span className="text-text-muted text-[10px] font-mono">{p.descripcion}</span>
-                      </div>
-                    </div>
-                    <span className="text-text-hi text-sm font-mono font-bold">{formatMoney(p.monto)}</span>
-                  </div>
-                );
-              })}
-              {ultimosPagos.length === 0 && (
-                <p className="text-text-muted text-sm text-center py-4">Sin pagos registrados</p>
+                      {cliente.telefono && (
+                        <a
+                          href={`tel:${cliente.telefono.replace(/\s+/g, "")}`}
+                          aria-label={`Llamar a ${cliente.nombre}`}
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border text-text-muted transition-colors hover:border-chrome/50 hover:text-chrome"
+                        >
+                          <Phone size={15} />
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               )}
-            </div>
-          </div>
+            </Seccion>
 
-          {/* Alumnos con plan vencido */}
-          <div className="bg-surface border border-border rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-text-hi font-semibold text-sm">Planes vencidos</h3>
-              <span className="text-danger text-xs font-mono">{stats.alumnosVencidos} alumnos</span>
-            </div>
-            <div className="flex flex-col gap-2">
-              {alumnos.filter((a) => a.estado === "vencido").slice(0, 5).map((al) => (
-                <div key={al.id} className="flex items-center justify-between py-3 px-3 rounded-lg bg-bg border border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center">
-                      <span className="text-danger text-xs font-bold">{al.nombre.charAt(0)}</span>
-                    </div>
-                    <div>
-                      <span className="text-text-hi text-sm font-medium block">{al.nombre}</span>
-                      <span className="text-text-muted text-[10px] font-mono">Plan {al.plan}</span>
-                    </div>
-                  </div>
-                  <span className="text-danger text-[10px] font-mono px-2 py-1 rounded-full border border-danger/30">
-                    VENCIDO
-                  </span>
-                </div>
-              ))}
-              {alumnos.filter((a) => a.estado === "vencido").length === 0 && (
-                <p className="text-text-muted text-sm text-center py-4">Sin planes vencidos</p>
+            {/* Clientes nuevos del mes */}
+            <Seccion
+              titulo="Clientes nuevos del mes"
+              extra={<span className="font-mono text-xs text-text-muted">{nuevosDelMes.length}</span>}
+            >
+              {nuevosDelMes.length === 0 ? (
+                <p className="py-6 text-center text-sm text-text-muted">
+                  Nadie se dio de alta este mes
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {nuevosDelMes.slice(0, 8).map((cliente) => (
+                    <li
+                      key={cliente.id}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-ink px-3 py-2"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Avatar nombre={cliente.nombre} size="sm" />
+                        <div className="min-w-0">
+                          <span className="block truncate text-sm text-text-hi">{cliente.nombre}</span>
+                          <span className="block font-mono text-xs text-text-muted">
+                            {cliente.plan}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="shrink-0 font-mono text-xs text-text-muted">
+                        {cliente.created_at.slice(0, 10)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               )}
-            </div>
+            </Seccion>
+
+            {/* Planes vencidos */}
+            <Seccion
+              titulo="Planes vencidos"
+              extra={<span className="font-mono text-xs text-danger">{vencidos.length}</span>}
+            >
+              {vencidos.length === 0 ? (
+                <p className="py-6 text-center text-sm text-text-muted">
+                  Todos los planes están al día
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {vencidos.slice(0, 8).map((cliente) => (
+                    <li
+                      key={cliente.id}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-ink px-3 py-2"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Avatar nombre={cliente.nombre} size="sm" />
+                        <div className="min-w-0">
+                          <span className="block truncate text-sm text-text-hi">{cliente.nombre}</span>
+                          <span className="block font-mono text-xs text-text-muted">
+                            {cliente.plan}
+                          </span>
+                        </div>
+                      </div>
+                      {cliente.telefono && (
+                        <a
+                          href={`tel:${cliente.telefono.replace(/\s+/g, "")}`}
+                          aria-label={`Llamar a ${cliente.nombre}`}
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border text-text-muted transition-colors hover:border-chrome/50 hover:text-chrome"
+                        >
+                          <Phone size={15} />
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Seccion>
+
+            {/* Ocupación de la semana */}
+            <Seccion titulo="Ocupación de la semana">
+              <ul className="flex flex-col gap-2">
+                {resumenSemana(sesiones, inscripciones).map((fila) => (
+                  <li
+                    key={fila.dia}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-ink px-3 py-2"
+                  >
+                    <span className="font-mono text-xs uppercase tracking-widest text-text-mid">
+                      {NOMBRES_DIA_CORTO[fila.dia]}
+                    </span>
+                    <div className="flex flex-1 items-center justify-end gap-3">
+                      <span className="font-mono text-xs text-text-muted">
+                        {fila.porcentaje}% ocupado
+                      </span>
+                      <PlateMeter ocupados={fila.ocupados} total={fila.cupo} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Seccion>
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+/**
+ * Ocupación por día de la semana: cuántas plazas se ocuparon sobre el total.
+ * Sólo cuenta las sesiones cargadas en el rango activo.
+ */
+function resumenSemana(sesiones: Sesion[], inscripciones: Inscripcion[]) {
+  const porDia = new Map<DiaSemana, { ocupados: number; cupo: number }>();
+  for (const dia of DIAS) porDia.set(dia, { ocupados: 0, cupo: 0 });
+
+  for (const sesion of sesiones) {
+    const fila = porDia.get(diaSemanaDe(sesion.fecha));
+    if (!fila) continue;
+    fila.cupo += sesion.cupo;
+    fila.ocupados += inscripciones.filter(
+      (i) => i.sesion_id === sesion.id && i.estado !== "cancelada",
+    ).length;
+  }
+
+  return DIAS.map((dia) => {
+    const fila = porDia.get(dia) ?? { ocupados: 0, cupo: 0 };
+    return {
+      dia,
+      ocupados: fila.ocupados,
+      cupo: fila.cupo,
+      porcentaje: fila.cupo > 0 ? Math.round((fila.ocupados / fila.cupo) * 100) : 0,
+    };
+  });
 }

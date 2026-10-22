@@ -12,3 +12,4 @@ export { Skeleton } from "./Skeleton";
 export { ErrorMessage } from "./ErrorMessage";
 export { ToastProvider, useToast } from "./Toast";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { InsigniaIcon } from "./InsigniaIcon";

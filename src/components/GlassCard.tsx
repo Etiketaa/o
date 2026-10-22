@@ -16,7 +16,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
 }) => {
   return (
     <div
-      className={`glass-card ${hoverable ? "glass-card-hover cursor-pointer" : ""} ${glow ? "ring-1 ring-lime/20" : ""} ${className}`}
+      className={`glass-card ${hoverable ? "glass-card-hover cursor-pointer" : ""} ${glow ? "ring-1 ring-chrome/20" : ""} ${className}`}
       style={style}
       {...rest}
     >

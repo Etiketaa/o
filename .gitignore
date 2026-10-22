@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secretos: nunca commitear
+.env
+.env.*
+!.env.example

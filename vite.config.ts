@@ -35,18 +35,17 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
+      // Inyecta el manifiesto de precache en src/sw.ts y genera dist/sw.js.
+      // El runtime caching (cache-first estaticos, network-first Supabase) y el
+      // manejo de notificaciones viven en src/sw.ts.
+      strategies: "injectManifest",
+      // resolveSwPaths del plugin resuelve <srcDir>/<filename> como fuente del
+      // SW y emite <outDir>/<filename sin extension>.js -> dist/sw.js.
+      srcDir: path.resolve(__dirname, "src"),
+      filename: "sw.ts",
+      injectManifest: {
+        swSrc: path.resolve(__dirname, "src/sw.ts"),
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "supabase-cache",
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
-            },
-          },
-        ],
       },
     }),
   ],
