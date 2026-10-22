@@ -29,6 +29,23 @@ function AppContent() {
     void init();
   }, [init]);
 
+  // Atajo de teclado global: Esc cierra el modal abierto (ReservarView, MisTurnosView, etc.).
+  // App no tiene acceso directo a los estados de cada modal, así que al presionar Esc busca
+  // el diálogo abierto en el DOM y activa su botón de cierre (aria-label="Cerrar modal").
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      const dialog = document.querySelector('[role="dialog"]');
+      if (!dialog) return;
+      const closeButton = dialog.querySelector(
+        'button[aria-label="Cerrar modal"]',
+      ) as HTMLElement | null;
+      if (closeButton) closeButton.click();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!user) return null;
 
   if (user.role === "admin") {

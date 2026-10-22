@@ -18,7 +18,7 @@ export function Sidebar({ items }: SidebarProps) {
   const { activeTab, setActiveTab } = useUIStore();
 
   return (
-    <div className="w-64 h-full bg-ink border-r-4 border-border flex flex-col">
+    <div className="w-64 h-full bg-ink border-r-2 border-border flex flex-col">
       {/* Logo */}
       <div className="px-6 py-6 border-b-4 border-border">
         <div className="flex items-center gap-3">
@@ -45,11 +45,10 @@ export function Sidebar({ items }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-none transition-all text-left border-l-4 border-transparent ${
-                active
-                  ? "text-neon brutal-border-neon"
-                  : "text-text-muted hover:text-text-hi hover:border-l-4 hover:border-border-hi"
+              className={`flex items-center gap-3 px-4 py-3 rounded-none transition-all text-left ${
+                active ? "text-neon bg-neon/10" : "text-text-muted hover:text-text-hi hover:bg-ink-3"
               }`}
+              aria-current={active ? "page" : undefined}
             >
               <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
               <span className="text-sm font-medium">{item.label}</span>

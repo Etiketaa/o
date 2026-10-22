@@ -303,7 +303,7 @@ export function ReservarView() {
         {!loading && sesionesDelDia.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-text-muted">
             <CalendarX size={30} strokeWidth={1.5} />
-            <p className="text-center text-sm">No hay turnos este día</p>
+            <p className="text-center text-sm text-text-hi">No hay turnos este día</p>
             <p className="max-w-[16rem] text-center text-xs text-text-muted">
               Probá con otro día de la semana o con la semana siguiente.
             </p>
@@ -379,7 +379,7 @@ export function ReservarView() {
                             </span>
                           ) : completo ? (
                             <span className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider text-danger">
-                              <Lock size={10} /> Completo
+                              <Lock size={10} aria-label="Sin cupo disponible" /> Completo
                             </span>
                           ) : (
                             <span className="font-mono text-[9px] uppercase tracking-wider text-text-muted">
@@ -442,6 +442,7 @@ export function ReservarView() {
                 </p>
                 <button
                   onClick={handleCancelar}
+                  aria-label="Cancelar esta reserva"
                   className="w-full rounded-xl border border-danger py-3 text-center text-sm font-semibold text-danger transition-colors hover:bg-danger/10"
                 >
                   Cancelar reserva
@@ -458,6 +459,7 @@ export function ReservarView() {
             ) : (
               <button
                 onClick={handleReservar}
+                aria-label="Reservar este turno"
                 className="w-full rounded-xl bg-chrome py-3 text-center text-sm font-bold text-ink transition-opacity hover:opacity-90"
               >
                 Reservar
