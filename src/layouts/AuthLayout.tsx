@@ -4,16 +4,9 @@ import { COLORS, FONTS } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { OnboardingGuide } from "@/components/OnboardingGuide";
-import { planDeFrecuencia } from "@/lib/semilla";
-import type { Franja } from "@/types";
+
 
 type Mode = "login" | "register";
-
-const FRANJAS: Array<{ clave: Franja; etiqueta: string }> = [
-  { clave: "manana", etiqueta: "Mañana" },
-  { clave: "tarde", etiqueta: "Tarde" },
-  { clave: "ambas", etiqueta: "Ambas" },
-];
 
 interface AuthLayoutProps {
   onBack?: () => void;
@@ -27,8 +20,6 @@ export function AuthLayout({ onBack, setup = false }: AuthLayoutProps) {
   const [password, setPassword] = useState("");
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
-  const [frecuencia, setFrecuencia] = useState(2);
-  const [franja, setFranja] = useState<Franja>("ambas");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -61,8 +52,8 @@ export function AuthLayout({ onBack, setup = false }: AuthLayoutProps) {
         password,
         nombre: nombre.trim(),
         telefono: telefono.trim(),
-        frecuencia_semana: frecuencia,
-        franja,
+        frecuencia_semana: 2,
+        franja: "ambas",
         slots_preferidos: [],
       });
       if (result.error) {
@@ -305,70 +296,6 @@ export function AuthLayout({ onBack, setup = false }: AuthLayoutProps) {
                 className="flex-1 outline-none text-sm"
                 style={{ fontFamily: FONTS.body, color: COLORS.textHi, backgroundColor: "transparent" }}
               />
-            </div>
-
-            {/* Frecuencia semanal */}
-            <div className="mt-3">
-              <span
-                className="mb-2 block font-mono text-[10px] uppercase tracking-[0.2em]"
-                style={{ color: COLORS.textMuted }}
-              >
-                ¿Cuántas veces por semana vas al gym?
-              </span>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setFrecuencia(n)}
-                    aria-pressed={frecuencia === n}
-                    aria-label={`${n} vez${n === 1 ? "" : "es"} por semana`}
-                    title="Cuántas veces por semana planeás venir al gym"
-                    className="min-h-11 min-w-11 flex-1 flex items-center justify-center rounded-lg border font-display text-lg tracking-wide transition-colors"
-                    style={{
-                      borderColor: frecuencia === n ? COLORS.chrome : COLORS.border,
-                      backgroundColor: frecuencia === n ? COLORS.chrome : COLORS.surface,
-                      color: frecuencia === n ? COLORS.bg : COLORS.textMid,
-                    }}
-                  >
-                    {n === 1 ? "1 vez" : n === 5 ? "5+ veces" : `${n} veces`}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-1.5 text-xs" style={{ fontFamily: FONTS.mono, color: COLORS.textMuted }}>
-                {frecuencia} {frecuencia === 1 ? "vez" : "veces"} por semana · Plan{" "}
-                <strong style={{ color: COLORS.chrome }}>{planDeFrecuencia(frecuencia)}</strong>
-              </p>
-            </div>
-
-            {/* Franja horaria */}
-            <div className="mt-3">
-              <span
-                className="mb-2 block font-mono text-[10px] uppercase tracking-[0.2em]"
-                style={{ color: COLORS.textMuted }}
-              >
-                ¿Qué franja preferís?
-              </span>
-              <div className="flex gap-2">
-                {FRANJAS.map((f) => (
-                  <button
-                    key={f.clave}
-                    type="button"
-                    onClick={() => setFranja(f.clave)}
-                    aria-pressed={franja === f.clave}
-                    aria-label={f.etiqueta}
-                    title="Mañana (08-12) o Tarde (13-21), o Ambas si te da igual"
-                    className="min-h-11 min-w-11 flex-1 flex items-center justify-center rounded-lg border font-semibold text-sm transition-colors"
-                    style={{
-                      borderColor: franja === f.clave ? COLORS.chrome : COLORS.border,
-                      backgroundColor: franja === f.clave ? COLORS.chrome : COLORS.surface,
-                      color: franja === f.clave ? COLORS.bg : COLORS.textMid,
-                    }}
-                  >
-                    {f.etiqueta}
-                  </button>
-                ))}
-              </div>
             </div>
 
           </>
