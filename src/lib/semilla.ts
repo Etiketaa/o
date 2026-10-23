@@ -24,16 +24,16 @@ interface PlantillaActividad {
 }
 
 const MANANA: PlantillaActividad[] = [
-  { actividad: "Funcional", coach: "Nacho", cupo: 12 },
-  { actividad: "Pesas Libres", coach: "Vale", cupo: 8 },
-  { actividad: "Movilidad", coach: "Vale", cupo: 10 },
+  { actividad: "Funcional", coach: "Kathy", cupo: 12 },
+  { actividad: "Pesas Libres", coach: "Kathy", cupo: 8 },
+  { actividad: "Movilidad", coach: "Kathy", cupo: 10 },
 ];
 
 const TARDE: PlantillaActividad[] = [
-  { actividad: "CrossTraining", coach: "Nacho", cupo: 14 },
-  { actividad: "Funcional", coach: "Nacho", cupo: 12 },
-  { actividad: "Pesas Libres", coach: "Vale", cupo: 8 },
-  { actividad: "Movilidad", coach: "Vale", cupo: 10 },
+  { actividad: "CrossTraining", coach: "Kathy", cupo: 14 },
+  { actividad: "Funcional", coach: "Kathy", cupo: 12 },
+  { actividad: "Pesas Libres", coach: "Kathy", cupo: 8 },
+  { actividad: "Movilidad", coach: "Kathy", cupo: 10 },
 ];
 
 /**

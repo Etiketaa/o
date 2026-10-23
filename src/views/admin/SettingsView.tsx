@@ -508,7 +508,7 @@ export function SettingsView() {
                     dia: form.dias_activos[0] ?? "Lun",
                     hora: slots[0] ?? "08:00",
                     actividad: actividades[0] ?? "Funcional",
-                    coach: coaches[0] ?? "Nacho",
+                    coach: coaches[0] ?? "Kathy",
                     cupo: 10,
                     activo: true,
                   });

@@ -73,7 +73,7 @@ function AppContent() {
 type Screen = "landing" | "login";
 
 export default function App() {
-  const { isAuthenticated, loading, loadSession } = useAuthStore();
+  const { isAuthenticated, loading, loadSession, necesitaSetup } = useAuthStore();
   const [screen, setScreen] = useState<Screen>("landing");
   const sessionLoaded = useRef(false);
 
@@ -102,6 +102,11 @@ export default function App() {
         <AppContent />
       </AppLayout>
     );
+  }
+
+  // Primer arranque (motor local sin usuarios): crear la cuenta del profesor.
+  if (necesitaSetup) {
+    return <AuthLayout setup />;
   }
 
   if (screen === "login") {

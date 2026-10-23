@@ -27,7 +27,7 @@ const ACTIVITIES = [
     name: "Funcional",
     desc: "Alta intensidad que mejora fuerza, resistencia y coordinación.",
     icon: Zap,
-    coach: "Nacho / Vale",
+    coach: "Kathy",
     schedule: "Lun a Vie 07:00 - 08:00",
     image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop&q=80",
   },
@@ -35,7 +35,7 @@ const ACTIVITIES = [
     name: "Pesas Libres",
     desc: "Trabajo de fuerza con libre elección de peso para ganar masa muscular.",
     icon: Dumbbell,
-    coach: "Vale",
+    coach: "Kathy",
     schedule: "Lun y Mar 09:00 / 19:00",
     image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&h=400&fit=crop&q=80",
   },
@@ -43,7 +43,7 @@ const ACTIVITIES = [
     name: "CrossTraining",
     desc: "Combinación de gimnástica, levantamiento de peso y cardio.",
     icon: Target,
-    coach: "Nacho",
+    coach: "Kathy",
     schedule: "Lun, Mié y Vie 18:30",
     image: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&h=400&fit=crop&q=80",
   },
@@ -51,7 +51,7 @@ const ACTIVITIES = [
     name: "Movilidad",
     desc: "Estiramientos y movilidad articular para prevenir lesiones.",
     icon: Heart,
-    coach: "Vale",
+    coach: "Kathy",
     schedule: "Lun 20:00 / Jue 09:00",
     image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=400&fit=crop&q=80",
   },
@@ -64,8 +64,7 @@ const PLANS = [
 ];
 
 const COACHES = [
-  { name: "Nacho", specialty: "Funcional & CrossTraining", initials: "NA", color: "#D4FF3D" },
-  { name: "Vale", specialty: "Pesas & Movilidad", initials: "VA", color: "#8FA83A" },
+  { name: "Kathy", specialty: "Funcional & CrossTraining", initials: "KA", color: "#D4FF3D" },
 ];
 
 const fadeInUp = {
