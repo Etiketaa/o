@@ -39,6 +39,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<{ error?: string }>;
   signup: (datos: DatosRegistro) => Promise<{ error?: string }>;
   crearCuentaProfesor: (datos: DatosRegistro) => Promise<{ error?: string }>;
+  existeProfesor: () => Promise<boolean>;
   logout: () => Promise<void>;
   loadSession: () => Promise<void>;
 }
@@ -232,6 +233,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   crearCuentaProfesor: async (datos) => {
     set({ loading: true });
+    // Solo puede existir un profesor (admin). Si ya hay uno, no se crea otro.
+    if (await existeProfesor()) {
+      set({ loading: false });
+      return { error: "Ya existe un profesor registrado. Solo puede haber uno." };
+    }
     const frecuencia = Math.max(1, Math.min(5, datos.frecuencia_semana));
     const plan = planDeFrecuencia(frecuencia);
     const vecesMes = VECES_MES_POR_FRECUENCIA[frecuencia] ?? frecuencia * 4;
@@ -318,6 +324,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  existeProfesor: async () => {
+    const perfiles = await db.listPerfiles();
+    return perfiles.some((p) => p.role === "admin");
+  },
+
   logout: async () => {
     if (getMotor() === "supabase") {
       await supabase.auth.signOut();
@@ -341,13 +352,19 @@ export const useAuthStore = create<AuthState>((set) => ({
           return;
         }
       }
+      // Sin sesión: si no hay profesor registrado, hay que hacer setup.
+      const perfilesSupabase = await db.listPerfiles();
+      if (!perfilesSupabase.some((p) => p.role === "admin")) {
+        set({ loading: false, necesitaSetup: true });
+        return;
+      }
       set({ loading: false });
       return;
     }
 
     if (getMotor() === "firebase") {
       const perfiles = await db.listPerfiles();
-      if (perfiles.length === 0) {
+      if (perfiles.length === 0 || !perfiles.some((p) => p.role === "admin")) {
         set({ loading: false, necesitaSetup: true });
         return;
       }
@@ -372,7 +389,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     // --- motor local ---
     const usuarios = await listarUsuarios();
-    if (usuarios.length === 0) {
+    const perfilesLocal = await db.listPerfiles();
+    if (usuarios.length === 0 || !perfilesLocal.some((p) => p.role === "admin")) {
       set({ loading: false, necesitaSetup: true });
       return;
     }
@@ -388,3 +406,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: false });
   },
 }));
+
+/** Verifica si ya existe algún perfil con rol "admin" (profesor). */
+export async function existeProfesor(): Promise<boolean> {
+  const perfiles = await db.listPerfiles();
+  return perfiles.some((p) => p.role === "admin");
+}

@@ -40,6 +40,12 @@ const TARDE: PlantillaActividad[] = [
  * Arma la grilla semanal por defecto: 5 días × 20 horarios = 100 turnos.
  * El profesor puede editarla después desde Configuración.
  */
+/** ¿La hora es entera (ej. "08:00", "09:00")? */
+function esHoraEntera(hora: string): boolean {
+  const [, m] = hora.split(":").map(Number);
+  return m === 0;
+}
+
 export function generarPlantillaPorDefecto(config: GymConfig = CONFIG_POR_DEFECTO): Turno[] {
   const dias = config.dias_activos;
   const turnos: Turno[] = [];
@@ -63,7 +69,7 @@ export function generarPlantillaPorDefecto(config: GymConfig = CONFIG_POR_DEFECT
           hora,
           actividad: item.actividad,
           coach: item.coach,
-          cupo: item.cupo,
+          cupo: esHoraEntera(hora) ? 10 : 5,
           activo: true,
           created_at: new Date().toISOString(),
         });

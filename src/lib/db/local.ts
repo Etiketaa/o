@@ -46,6 +46,12 @@ export const localStore: DataStore = {
   },
 
   async savePerfil(perfil) {
+    if (perfil.role === "admin") {
+      const perfiles = await idbTodos<Profile>("perfiles");
+      if (perfiles.some((p) => p.role === "admin" && p.id !== perfil.id)) {
+        throw new Error("Ya existe un profesor registrado");
+      }
+    }
     await idbGuardar("perfiles", perfil);
   },
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
   Dumbbell,
@@ -10,6 +10,11 @@ import {
   Target,
   Check,
   ArrowDown,
+  Share,
+  Apple,
+  Smartphone,
+  MoreVertical,
+  Plus,
 } from "lucide-react";
 
 function InstagramIcon({ size = 18, className = "" }: { size?: number; className?: string }) {
@@ -87,6 +92,26 @@ const staggerContainer = {
     },
   },
 };
+
+const APP_URL = "https://turnero-gym-hazel.vercel.app";
+
+const IPHONE_STEPS: ReactNode[] = [
+  <>Abrí <strong className="text-neon font-semibold">Safari</strong> en tu iPhone.</>,
+  <>Entrá a la URL de la app: <code className="text-neon font-mono text-xs break-all">{APP_URL}</code></>,
+  <>Tocá el botón <strong className="text-neon font-semibold">Compartir</strong> (el cuadrado con la flecha hacia arriba, en la barra inferior).</>,
+  <>Buscá y tocá <strong className="text-neon font-semibold">"Agregar a pantalla de inicio"</strong>.</>,
+  <>Tocá <strong className="text-neon font-semibold">"Agregar"</strong> en la esquina superior derecha.</>,
+  <>La app aparece en tu pantalla de inicio como un ícono.</>,
+];
+
+const ANDROID_STEPS: ReactNode[] = [
+  <>Abrí <strong className="text-neon font-semibold">Chrome</strong> en tu Android.</>,
+  <>Entrá a la URL de la app: <code className="text-neon font-mono text-xs break-all">{APP_URL}</code></>,
+  <>Tocá los <strong className="text-neon font-semibold">3 puntos</strong> (menú) en la esquina superior derecha.</>,
+  <>Tocá <strong className="text-neon font-semibold">"Instalar app"</strong> o <strong className="text-neon font-semibold">"Agregar a pantalla de inicio"</strong>.</>,
+  <>Tocá <strong className="text-neon font-semibold">"Instalar"</strong> en el diálogo que aparece.</>,
+  <>La app aparece en tu pantalla de inicio como un ícono.</>,
+];
 
 export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -538,6 +563,123 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
                 <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
               </motion.button>
             </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Instalar app (PWA) */}
+      <section id="instalar" className="py-16 md:py-24 lg:py-40 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-bg via-surface/50 to-bg pointer-events-none" />
+        <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="mb-16 md:mb-20 text-center"
+          >
+            <motion.span variants={fadeInUp} className="text-[11px] tracking-[0.25em] uppercase text-neon mb-4 block font-medium">
+              Instalación
+            </motion.span>
+            <motion.h2 variants={fadeInUp} className="font-display text-text-hi text-[clamp(32px,5vw,52px)] uppercase tracking-[0.02em]">
+              ¿Cómo instalar la app en tu celular?
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="text-text-mid max-w-[560px] mx-auto mt-6 text-base md:text-lg leading-relaxed">
+              Tené OZ Entrenamiento en tu pantalla de inicio como si fuera una app nativa. Seguí los pasos según tu celular.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto"
+          >
+            {/* iPhone */}
+            <motion.div
+              variants={fadeInUp}
+              className="brutal-card-neon p-6 md:p-8 flex flex-col gap-6"
+            >
+              <div className="flex flex-col items-center gap-3 text-center">
+                <div className="w-16 h-16 brutal-border-neon bg-ink flex items-center justify-center shrink-0">
+                  <Apple size={48} className="text-text-hi" />
+                </div>
+                <div>
+                  <h3 className="font-display text-text-hi text-xl uppercase tracking-wide">
+                    iPhone / Safari
+                  </h3>
+                  <p className="text-text-muted text-xs tracking-wider uppercase mt-1">
+                    Pasos para iOS
+                  </p>
+                </div>
+              </div>
+              <ol className="flex flex-col gap-4">
+                {IPHONE_STEPS.map((step, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="shrink-0 w-7 h-7 flex items-center justify-center border-2 border-neon text-neon font-mono text-xs font-bold">
+                      {i + 1}
+                    </span>
+                    <span className="text-text-mid text-sm leading-relaxed pt-0.5">{step}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-auto pt-4 border-t border-neon/20 flex items-center gap-2 text-[11px] tracking-wider uppercase text-text-muted">
+                <Share size={14} className="text-neon" />
+                <span>Usá Safari, no Chrome ni Firefox</span>
+              </div>
+            </motion.div>
+
+            {/* Android */}
+            <motion.div
+              variants={fadeInUp}
+              className="brutal-card-neon p-6 md:p-8 flex flex-col gap-6"
+            >
+              <div className="flex flex-col items-center gap-3 text-center">
+                <div className="w-16 h-16 brutal-border-neon bg-ink flex items-center justify-center shrink-0">
+                  <Smartphone size={48} className="text-neon" />
+                </div>
+                <div>
+                  <h3 className="font-display text-text-hi text-xl uppercase tracking-wide">
+                    Android / Chrome
+                  </h3>
+                  <p className="text-text-muted text-xs tracking-wider uppercase mt-1">
+                    Pasos para Android
+                  </p>
+                </div>
+              </div>
+              <ol className="flex flex-col gap-4">
+                {ANDROID_STEPS.map((step, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="shrink-0 w-7 h-7 flex items-center justify-center border-2 border-neon text-neon font-mono text-xs font-bold">
+                      {i + 1}
+                    </span>
+                    <span className="text-text-mid text-sm leading-relaxed pt-0.5">{step}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-auto pt-4 border-t border-neon/20 flex items-center gap-2 text-[11px] tracking-wider uppercase text-text-muted">
+                <MoreVertical size={14} className="text-neon" />
+                <span>Menú de 3 puntos arriba a la derecha</span>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="mt-10 text-center"
+          >
+            <button
+              type="button"
+              onClick={onGoToApp}
+              className="brutal-btn brutal-btn-neon inline-flex items-center gap-3 px-8 py-4"
+            >
+              <Plus size={16} />
+              Abrir la app
+            </button>
           </motion.div>
         </div>
       </section>

@@ -42,6 +42,13 @@ export const supabaseStore: DataStore = {
   },
 
   async savePerfil(perfil) {
+    if (perfil.role === "admin") {
+      const { data } = await supabase.from("profiles").select("id, role");
+      const perfiles = (data as Array<{ id: string; role: string }> | null) ?? [];
+      if (perfiles.some((p) => p.role === "admin" && p.id !== perfil.id)) {
+        throw new Error("Ya existe un profesor registrado");
+      }
+    }
     await supabase.from("profiles").upsert(perfil);
   },
 

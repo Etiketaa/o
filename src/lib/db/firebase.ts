@@ -81,6 +81,13 @@ export const firebaseStore: DataStore = {
   },
 
   async savePerfil(perfil) {
+    if (perfil.role === "admin") {
+      const snap = await getDocs(collection(firestore, "profiles"));
+      const perfiles = snap.docs.map((d) => d.data() as Profile);
+      if (perfiles.some((p) => p.role === "admin" && p.id !== perfil.id)) {
+        throw new Error("Ya existe un profesor registrado");
+      }
+    }
     await setDoc(doc(firestore, "profiles", perfil.id), limpiar({ ...perfil }));
   },
 
