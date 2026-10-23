@@ -113,7 +113,13 @@ const ANDROID_STEPS: ReactNode[] = [
   <>La app aparece en tu pantalla de inicio como un ícono.</>,
 ];
 
-export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
+export function LandingView({
+  onGoToApp,
+  onGoToSetup,
+}: {
+  onGoToApp: () => void;
+  onGoToSetup?: () => void;
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { scrollY } = useScroll();
@@ -178,6 +184,16 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
             >
               Reservar
             </motion.button>
+            {onGoToSetup && (
+              <button
+                type="button"
+                onClick={onGoToSetup}
+                className="px-5 py-3 text-[12px] font-semibold tracking-[0.08em] uppercase border-2 border-chrome/40 text-chrome rounded-xl hover:bg-chrome/5 transition-all duration-300"
+                style={{ minHeight: 44 }}
+              >
+                Soy el profesor
+              </button>
+            )}
           </div>
 
           <button
@@ -220,6 +236,16 @@ export function LandingView({ onGoToApp }: { onGoToApp: () => void }) {
                 >
                   Reservar Clase
                 </motion.button>
+                {onGoToSetup && (
+                  <button
+                    type="button"
+                    onClick={() => { setMenuOpen(false); onGoToSetup(); }}
+                    className="w-full py-3 text-[12px] font-semibold tracking-[0.08em] uppercase border-2 border-chrome/40 text-chrome rounded-xl hover:bg-chrome/5 transition-all"
+                    style={{ minHeight: 44 }}
+                  >
+                    Soy el profesor — crear cuenta
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

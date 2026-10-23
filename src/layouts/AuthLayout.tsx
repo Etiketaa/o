@@ -24,7 +24,7 @@ export function AuthLayout({ onBack, setup = false }: AuthLayoutProps) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const { login, signup, crearCuentaProfesor, loading } = useAuthStore();
+  const { login, signup, crearCuentaProfesor, loadSession, loading } = useAuthStore();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -76,7 +76,7 @@ export function AuthLayout({ onBack, setup = false }: AuthLayoutProps) {
         setError("Ingresá tu nombre");
         return;
       }
-      const emailValido = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);
+      const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       if (!emailValido) {
         setError("Ingresá un email válido");
         return;
@@ -95,15 +95,31 @@ export function AuthLayout({ onBack, setup = false }: AuthLayoutProps) {
         franja: "ambas",
         slots_preferidos: [],
       });
-      if (result.error) setError(result.error);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        // Aseguramos que la sesión quede activa para entrar al app.
+        await loadSession();
+      }
     };
 
     return (
       <>
-      <div className="flex flex-col items-center justify-center min-h-full px-6" style={{ backgroundColor: COLORS.bg }}>
+      <div className="relative flex flex-col items-center justify-center min-h-full px-6" style={{ backgroundColor: COLORS.bg }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
         `}</style>
+
+        {onBack && (
+          <button
+            onClick={onBack}
+            aria-label="Volver al inicio"
+            className="absolute top-4 left-4 flex items-center gap-1 text-xs"
+            style={{ fontFamily: FONTS.mono, color: COLORS.textHi }}
+          >
+            <ArrowLeft size={14} /> Volver
+          </button>
+        )}
 
         <div className="flex flex-col items-center gap-3 mb-8">
           <div

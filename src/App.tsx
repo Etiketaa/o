@@ -70,7 +70,7 @@ function AppContent() {
   }
 }
 
-type Screen = "landing" | "login";
+type Screen = "landing" | "login" | "setup";
 
 export default function App() {
   const { isAuthenticated, loading, loadSession, necesitaSetup } = useAuthStore();
@@ -104,14 +104,18 @@ export default function App() {
     );
   }
 
-  // Primer arranque (motor local sin usuarios): crear la cuenta del profesor.
-  if (necesitaSetup) {
-    return <AuthLayout setup />;
+  if (screen === "setup") {
+    return <AuthLayout setup onBack={() => setScreen("landing")} />;
   }
 
   if (screen === "login") {
     return <AuthLayout onBack={() => setScreen("landing")} />;
   }
 
-  return <LandingView onGoToApp={() => setScreen("login")} />;
+  return (
+    <LandingView
+      onGoToApp={() => setScreen("login")}
+      onGoToSetup={necesitaSetup ? () => setScreen("setup") : undefined}
+    />
+  );
 }
