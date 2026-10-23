@@ -443,12 +443,12 @@ export function MisTurnosView() {
   const nivel = resumen ? infoNivel(resumen.nivel) : null;
 
   return (
-    <div className="h-full overflow-y-auto px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-5">
+    <div className="h-full overflow-y-auto px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] pt-8">
       <div className="mx-auto max-w-4xl">
         <span className="block text-[11px] font-medium uppercase tracking-[0.2em] text-chrome">
           Mis turnos
         </span>
-        <h1 className="chrome-text font-display text-2xl tracking-wide">Tus reservas</h1>
+        <h1 className="chrome-text font-display text-2xl tracking-wide mb-10">Tus reservas</h1>
 
         {/* Toast deshacer: aparece tras cancelar una reserva o guardar feedback. */}
         {undoToast && (
@@ -466,7 +466,7 @@ export function MisTurnosView() {
 
         {/* Esqueleto mientras carga y no hay datos aún */}
         {loading && proximos.length === 0 && (
-          <div className="mt-6 flex flex-col gap-3">
+          <div className="mt-10 flex flex-col gap-3">
             {[0, 1].map((i) => (
               <div key={i} className="skeleton h-28 rounded-xl" />
             ))}
@@ -475,7 +475,7 @@ export function MisTurnosView() {
 
         {/* Estado vacío: sin turnos próximos */}
         {!loading && proximos.length === 0 && (
-          <section className="mt-6 flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-border bg-ink-2 py-16 text-center">
+          <section className="mt-10 flex flex-col items-center justify-center gap-6 rounded-xl border-2 border-border bg-ink-2 py-20 text-center">
             <CalendarCheck size={32} strokeWidth={1.5} aria-hidden="true" />
             <p className="text-sm font-semibold text-text-hi">No tenés turnos reservados</p>
             <button
@@ -490,7 +490,7 @@ export function MisTurnosView() {
         {proximo && (
           <>
             {/* 1. HÉROE: próximo turno (o en curso) */}
-            <section className="mt-6">
+            <section className="mt-12">
               <HeroTurn
                 inscripcion={proximo.inscripcion}
                 sesion={proximo.sesion}
@@ -503,7 +503,7 @@ export function MisTurnosView() {
 
             {/* 2. PRÓXIMOS RESTANTES (lista compacta, sin repetir el héroe) */}
             {restantes.length > 0 && (
-              <section className="mt-6">
+              <section className="mt-10">
                 <h2 className="font-display text-lg uppercase tracking-[0.2em] text-chrome-dim">
                   Próximos
                 </h2>
@@ -525,7 +525,7 @@ export function MisTurnosView() {
 
         {/* 3. PASADOS — solo los que necesitan feedback */}
         {pasadosSinFeedback.length > 0 && (
-          <section className="mt-8">
+          <section className="mt-12">
             <h2 className="font-display text-lg uppercase tracking-[0.2em] text-chrome-dim">
               Pasados — tu opinión
             </h2>
@@ -570,7 +570,7 @@ export function MisTurnosView() {
 
         {/* 4. PROGRESO — chip discreto al final */}
         {resumen && nivel && (
-          <section className="mt-8">
+          <section className="mt-12">
             <div className="flex flex-wrap items-center gap-3">
               <span className={`rounded-lg border-2 border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider ${CLASE_NIVEL[resumen.nivel]}`}>
                 Nivel {nivel.nombre}
