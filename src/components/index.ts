@@ -13,3 +13,4 @@ export { ErrorMessage } from "./ErrorMessage";
 export { ToastProvider, useToast } from "./Toast";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { InsigniaIcon } from "./InsigniaIcon";
+export { OnboardingGuide } from "./OnboardingGuide";

@@ -3,6 +3,7 @@ import { Dumbbell, Mail, Lock, Eye, EyeOff, User, Phone, ArrowLeft } from "lucid
 import { COLORS, FONTS } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { OnboardingGuide } from "@/components/OnboardingGuide";
 import { planDeFrecuencia } from "@/lib/semilla";
 import type { Franja } from "@/types";
 
@@ -29,6 +30,7 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const { login, signup, loading } = useAuthStore();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,12 +66,14 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
       if (result.error) {
         setError(result.error);
       } else {
-        setMode("login");
+        setSuccess("Cuenta creada. ¡Bienvenido/a!");
+        setShowOnboarding(true);
       }
     }
   };
 
   return (
+    <>
     <div className="flex flex-col items-center justify-center min-h-full px-6" style={{ backgroundColor: COLORS.bg }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
@@ -303,5 +307,14 @@ export function AuthLayout({ onBack }: AuthLayoutProps) {
         </div>
       </div>
     </div>
+
+    <OnboardingGuide
+      open={showOnboarding}
+      onClose={() => {
+        setShowOnboarding(false);
+        setMode("login");
+      }}
+    />
+    </>
   );
 }
