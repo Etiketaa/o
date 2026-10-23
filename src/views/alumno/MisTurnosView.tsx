@@ -7,7 +7,15 @@ import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 import { formatearCuentaRegresiva, useReloj } from "@/hooks/useTurnoAlerta";
 import { db } from "@/lib/db";
-import { fechaCorta, fechaLarga, hoyISO, minutosParaEmpezar, sesionTermino, sumarDias } from "@/lib/fechas";
+import {
+  fechaCorta,
+  fechaLarga,
+  hoyISO,
+  minutosParaEmpezar,
+  sesionTermino,
+  sumarDias,
+  etiquetaDiaRelativo,
+} from "@/lib/fechas";
 import { infoNivel, resumenAlumno, type Nivel } from "@/lib/puntaje";
 
 const CLASE_NIVEL: Record<Nivel, string> = {
@@ -16,6 +24,10 @@ const CLASE_NIVEL: Record<Nivel, string> = {
   platino: "text-nivel-platino",
   diamante: "text-nivel-diamante",
 };
+
+/* ------------------------------------------------------------------ */
+/*  FeedbackBloque — se conserva igual: Bien / Mal + comentario + Guardar */
+/* ------------------------------------------------------------------ */
 
 interface FeedbackBloqueProps {
   inscripcion: Inscripcion;
@@ -40,7 +52,7 @@ function FeedbackBloque({ inscripcion, sesion, onGuardar }: FeedbackBloqueProps)
   };
 
   return (
-    <div className="mt-3 rounded-lg border-2 border-border bg-ink px-3 py-3">
+    <div className="mt-3 rounded-lg border-2 border-border bg-ink-2 px-3 py-3">
       {yaRespondio ? (
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -56,7 +68,7 @@ function FeedbackBloque({ inscripcion, sesion, onGuardar }: FeedbackBloqueProps)
           <button
             onClick={() => setEditando(true)}
             aria-label="Cambiar tu respuesta de feedback"
-            className="shrink-0 min-h-11 min-w-11 rounded-lg border-2 border-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-text-hi transition-colors hover:text-chrome focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chrome"
+            className="shrink-0 min-h-11 min-w-11 rounded-lg border-2 border-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-text-hi transition-colors hover:text-chrome focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chrome"
           >
             Cambiar
           </button>
@@ -118,6 +130,135 @@ function FeedbackBloque({ inscripcion, sesion, onGuardar }: FeedbackBloqueProps)
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/*  Héroe: turno más próximo (o en curso)                             */
+/* ------------------------------------------------------------------ */
+
+interface HeroTurnProps {
+  inscripcion: Inscripcion;
+  sesion: Sesion;
+  minutos: number;
+  onCancelar: () => void;
+}
+
+function HeroTurn({ sesion, minutos, onCancelar }: HeroTurnProps) {
+  const empezó = minutos <= 0;
+  const etiquetaDia = etiquetaDiaRelativo(sesion.fecha) || fechaCorta(sesion.fecha);
+
+  return (
+    <article
+      className={`brutal-card relative overflow-hidden ${empezó ? "brutal-card-neon" : ""}`}
+    >
+      <div className="px-5 py-5">
+        {/* Fecha + hora */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-text-muted">
+              {etiquetaDia}
+            </span>
+            <span className="font-display text-5xl leading-none tracking-wide text-text-hi">
+              {sesion.hora}
+            </span>
+          </div>
+          <div className="flex min-w-0 flex-col gap-1 sm:flex-1 sm:items-end sm:justify-between">
+            <span className="truncate font-body text-lg font-bold text-text-hi">
+              {sesion.actividad}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
+              Coach {sesion.coach}
+            </span>
+          </div>
+        </div>
+
+        {/* Cuenta regresiva + botón cancelar */}
+        <div className="mt-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
+          <div className="flex items-center gap-2">
+            <span
+              className={`font-mono text-[11px] uppercase tracking-[0.2em] ${
+                empezó ? "text-neon" : "text-chrome"
+              }`}
+            >
+              {empezó ? "EN CURSO" : formatearCuentaRegresiva(minutos)}
+            </span>
+            {empezó && (
+              <span className="inline-flex items-center gap-1 rounded-lg border-2 border-neon bg-neon/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-neon">
+                En curso
+              </span>
+            )}
+          </div>
+          <button
+            onClick={onCancelar}
+            aria-label={`Cancelar reserva de ${sesion.actividad}`}
+            className="min-h-11 shrink-0 flex items-center justify-center rounded-lg border-2 border-danger px-3 font-mono text-[10px] uppercase tracking-[0.2em] text-danger transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          >
+            <X size={16} aria-hidden="true" />
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Próximo restante: item compacto de la lista secundaria            */
+/* ------------------------------------------------------------------ */
+
+interface ProximoItemProps {
+  inscripcion: Inscripcion;
+  sesion: Sesion;
+  minutos: number;
+  onCancelar: () => void;
+}
+
+function ProximoItem({ sesion, minutos, onCancelar }: ProximoItemProps) {
+  const empezó = minutos <= 0;
+
+  return (
+    <article className="rounded-xl border-2 border-border bg-ink-2 px-4 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex w-[56px] shrink-0 flex-col">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
+              {fechaCorta(sesion.fecha)}
+            </span>
+            <span className="font-display text-2xl leading-none tracking-wide text-text-hi">
+              {sesion.hora}
+            </span>
+          </div>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="truncate font-body text-sm font-bold text-text-hi">
+              {sesion.actividad}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
+              Coach {sesion.coach}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <p className={`font-mono text-[10px] uppercase tracking-wider ${
+            empezó ? "text-warn" : "text-chrome-dim"
+          }`}>
+            {empezó ? "En curso" : formatearCuentaRegresiva(minutos)}
+          </p>
+          <button
+            onClick={onCancelar}
+            aria-label={`Cancelar reserva de ${sesion.actividad}`}
+            className="min-h-11 min-w-11 shrink-0 flex items-center justify-center rounded-lg border-2 border-border text-text-muted transition-colors hover:border-danger hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Vista principal                                                   */
+/* ------------------------------------------------------------------ */
 
 export function MisTurnosView() {
   const { user } = useAuthStore();
@@ -239,6 +380,15 @@ export function MisTurnosView() {
     [pares, duracion, ahora],
   );
 
+  // Solo pasados que aún no tienen feedback (ya respondidos no se muestran).
+  const pasadosSinFeedback = useMemo(
+    () => pasados.filter((p) => p.inscripcion.feedback === null),
+    [pasados],
+  );
+
+  const proximo = proximos[0];
+  const restantes = proximos.slice(1);
+
   const [cancelTarget, setCancelTarget] = useState<{
     inscripcion: Inscripcion;
     sesion: Sesion;
@@ -314,157 +464,127 @@ export function MisTurnosView() {
           </div>
         )}
 
-        {/* Próximos primero — acción principal */}
-        <section className="mt-6">
-          <h2 className="font-display text-lg uppercase tracking-[0.2em] text-chrome-dim">
-            Próximos
-          </h2>
+        {/* Esqueleto mientras carga y no hay datos aún */}
+        {loading && proximos.length === 0 && (
+          <div className="mt-6 flex flex-col gap-3">
+            {[0, 1].map((i) => (
+              <div key={i} className="skeleton h-28 rounded-xl" />
+            ))}
+          </div>
+        )}
 
-          {loading && proximos.length === 0 && (
+        {/* Estado vacío: sin turnos próximos */}
+        {!loading && proximos.length === 0 && (
+          <section className="mt-6 flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-border bg-ink-2 py-16 text-center">
+            <CalendarCheck size={32} strokeWidth={1.5} aria-hidden="true" />
+            <p className="text-sm font-semibold text-text-hi">No tenés turnos reservados</p>
+            <button
+              onClick={() => setActiveTab("reservar")}
+              className="min-h-11 rounded-lg border-2 border-neon bg-transparent px-6 font-mono text-[10px] uppercase tracking-[0.2em] text-neon transition-colors hover:bg-neon hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon"
+            >
+              Reservar un turno
+            </button>
+          </section>
+        )}
+
+        {proximo && (
+          <>
+            {/* 1. HÉROE: próximo turno (o en curso) */}
+            <section className="mt-6">
+              <HeroTurn
+                inscripcion={proximo.inscripcion}
+                sesion={proximo.sesion}
+                minutos={minutosParaEmpezar(proximo.sesion.fecha, proximo.sesion.hora, ahora)}
+                onCancelar={() =>
+                  setCancelTarget({ inscripcion: proximo.inscripcion, sesion: proximo.sesion })
+                }
+              />
+            </section>
+
+            {/* 2. PRÓXIMOS RESTANTES (lista compacta, sin repetir el héroe) */}
+            {restantes.length > 0 && (
+              <section className="mt-6">
+                <h2 className="font-display text-lg uppercase tracking-[0.2em] text-chrome-dim">
+                  Próximos
+                </h2>
+                <div className="mt-3 flex flex-col gap-3">
+                  {restantes.map(({ inscripcion, sesion }) => (
+                    <ProximoItem
+                      key={inscripcion.id}
+                      inscripcion={inscripcion}
+                      sesion={sesion}
+                      minutos={minutosParaEmpezar(sesion.fecha, sesion.hora, ahora)}
+                      onCancelar={() => setCancelTarget({ inscripcion, sesion })}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        )}
+
+        {/* 3. PASADOS — solo los que necesitan feedback */}
+        {pasadosSinFeedback.length > 0 && (
+          <section className="mt-8">
+            <h2 className="font-display text-lg uppercase tracking-[0.2em] text-chrome-dim">
+              Pasados — tu opinión
+            </h2>
+            <p className="mt-2 text-xs text-text-muted">
+              Calificá los turnos que ya terminaron.
+            </p>
             <div className="mt-3 flex flex-col gap-3">
-              {[0, 1].map((i) => (
-                <div key={i} className="skeleton h-28 rounded-xl" />
-              ))}
-            </div>
-          )}
-
-          {!loading && proximos.length === 0 && (
-            <div className="mt-3 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-border bg-ink-2 py-12 text-text-muted">
-              <CalendarCheck size={28} strokeWidth={1.5} aria-hidden="true" />
-              <p className="text-sm">No tenés turnos reservados</p>
-              <button
-                onClick={() => setActiveTab("reservar")}
-                className="min-h-11 rounded-lg border-2 border-chrome/40 px-5 font-mono text-[11px] uppercase tracking-[0.2em] text-chrome transition-colors hover:bg-chrome/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chrome"
-              >
-                Reservar un turno
-              </button>
-            </div>
-          )}
-
-          <div className="mt-3 flex flex-col gap-3">
-            {proximos.map(({ inscripcion, sesion }, i) => {
-              const minutos = minutosParaEmpezar(sesion.fecha, sesion.hora, ahora);
-              const empezó = minutos <= 0;
-              return (
-                <article
-                  key={inscripcion.id}
-                  className={`rounded-xl border-2 border-chrome/30 bg-ink-2 px-4 py-4 ${
-                    i === 0 ? "border-chrome ring-1 ring-chrome" : ""
-                  }`}
-                >
+              {pasadosSinFeedback.map(({ inscripcion, sesion }) => (
+                <article key={inscripcion.id} className="rounded-xl border-2 border-border bg-ink-2 px-4 py-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex w-[56px] shrink-0 flex-col">
-                        <span className="font-mono text-[10px] uppercase tracking-wider text-chrome-dim">
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <span className="truncate font-body text-sm font-bold text-text-hi">
+                        {sesion.actividad}
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
                           {fechaCorta(sesion.fecha)}
                         </span>
-                        <span className="font-display text-2xl leading-none tracking-wide text-text-hi">
+                        <span className="w-px h-3 bg-border" />
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
                           {sesion.hora}
                         </span>
-                      </div>
-                      <div className="flex min-w-0 flex-col gap-1">
-                        <span className="truncate font-body text-sm font-bold text-text-hi">
-                          {sesion.actividad}
-                        </span>
+                        <span className="w-px h-3 bg-border" />
                         <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
                           Coach {sesion.coach}
                         </span>
                       </div>
                     </div>
-
-                    <button
-                      onClick={() => setCancelTarget({ inscripcion, sesion })}
-                      aria-label={`Cancelar reserva de ${sesion.actividad}`}
-                      className="min-h-11 min-w-11 shrink-0 flex items-center justify-center rounded-lg border-2 border-border text-text-muted transition-colors hover:border-danger hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
-                    >
-                      <X size={18} aria-hidden="true" />
-                    </button>
                   </div>
-
-                  <p
-                    aria-current={empezó ? "true" : undefined}
-                    className={`mt-3 font-mono text-[11px] uppercase tracking-wider ${
-                      empezó ? "text-warn" : "text-chrome"
-                    }`}
-                  >
-                    {empezó ? "En curso" : formatearCuentaRegresiva(minutos)}
-                  </p>
+                  <FeedbackBloque
+                    inscripcion={inscripcion}
+                    sesion={sesion}
+                    onGuardar={(feedback, comentario) =>
+                      handleFeedback(inscripcion, feedback, comentario)
+                    }
+                  />
                 </article>
-              );
-            })}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Pasados — solo feedback */}
-        <section className="mt-8">
-          <h2 className="font-display text-lg uppercase tracking-[0.2em] text-chrome-dim">
-            Pasados
-          </h2>
-
-          {!loading && pasados.length === 0 && (
-            <p className="mt-3 rounded-xl border-2 border-border bg-ink-2 px-4 py-6 text-center text-sm text-text-hi">
-              Todavía no hay turnos pasados.
-            </p>
-          )}
-
-          <div className="mt-3 flex flex-col gap-3">
-            {pasados.map(({ inscripcion, sesion }) => (
-              <article key={inscripcion.id} className="rounded-xl border-2 border-border bg-ink-2 px-4 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <span className="truncate font-body text-sm font-bold text-text-hi">
-                      {sesion.actividad}
-                    </span>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
-                        {fechaCorta(sesion.fecha)}
-                      </span>
-                      <span className="w-px h-3 bg-border" />
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
-                        {inscripcion.estado === "asistio"
-                          ? "Asististe"
-                          : inscripcion.estado === "faltó"
-                            ? "Faltaste"
-                            : "Sin marcar"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <FeedbackBloque
-                  inscripcion={inscripcion}
-                  sesion={sesion}
-                  onGuardar={(feedback, comentario) =>
-                    handleFeedback(inscripcion, feedback, comentario)
-                  }
-                />
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* Resumen de puntaje — segundo plano */}
+        {/* 4. PROGRESO — chip discreto al final */}
         {resumen && nivel && (
-          <section className="mt-8 pt-6 border-t-2 border-border">
-            <h2 className="font-display text-lg uppercase tracking-[0.2em] text-chrome-dim mb-3">
-              Tu progreso
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              <span
-                className={`rounded-lg border-2 border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider ${CLASE_NIVEL[resumen.nivel]}`}
-              >
+          <section className="mt-8">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={`rounded-lg border-2 border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider ${CLASE_NIVEL[resumen.nivel]}`}>
                 Nivel {nivel.nombre}
               </span>
               <span className="rounded-lg border-2 border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-text-hi">
                 Concurrencia {resumen.concurrencia}%
               </span>
+              <button
+                onClick={() => setActiveTab("progreso")}
+                className="min-h-11 rounded-lg border-2 border-chrome/40 px-4 font-mono text-[11px] uppercase tracking-[0.2em] text-chrome transition-colors hover:bg-chrome/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chrome"
+              >
+                Ver progreso y recompensas
+              </button>
             </div>
-            <button
-              onClick={() => setActiveTab("progreso")}
-              className="mt-4 min-h-11 w-full rounded-lg border-2 border-chrome/40 px-4 font-mono text-[11px] uppercase tracking-[0.2em] text-chrome transition-colors hover:bg-chrome/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chrome"
-            >
-              Ver progreso y recompensas
-            </button>
           </section>
         )}
 
