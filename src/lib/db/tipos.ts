@@ -52,5 +52,5 @@ export interface DataStore {
   deletePlanActividad(id: string): Promise<void>;
 
   /** Identifica el motor, para mostrarlo en la interfaz. */
-  readonly motor: "local" | "supabase";
+  readonly motor: "local" | "supabase" | "firebase";
 }

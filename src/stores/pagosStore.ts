@@ -2,6 +2,8 @@ import { create } from "zustand";
 import type { Pago, PagoConfig, EstadoPago } from "@/types";
 import { db, getMotor } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
+import { firebaseStorage } from "@/lib/db/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface PagosState {
   pagos: Pago[];
@@ -90,6 +92,17 @@ export const usePagosStore = create<PagosState>((set, get) => ({
         return null;
       }
       comprobanteUrl = supabase.storage.from("comprobantes").getPublicUrl(ruta).data.publicUrl;
+    } else if (getMotor() === "firebase") {
+      const extension = file.name.split(".").pop();
+      const ruta = `comprobantes/${pagoId}/${Date.now()}.${extension}`;
+      const storageRef = ref(firebaseStorage, ruta);
+      try {
+        await uploadBytes(storageRef, file);
+        comprobanteUrl = await getDownloadURL(storageRef);
+      } catch (error) {
+        console.error("Error subiendo comprobante:", error);
+        return null;
+      }
     } else {
       try {
         comprobanteUrl = await leerComoDataURL(file);

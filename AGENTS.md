@@ -115,11 +115,18 @@ No hay venv de Python en este proyecto (PIL solo se menciona para generar los
 - PWA: workbox con `runtimeCaching` para `*.supabase.co` (NetworkFirst) si el
   motor supabase está activo.
 
-Variables de entorno (`.env.example`):
+Variables de entorno (`.env.example` / `.env.local.example`):
 
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
+
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
 ```
 
 El `.env.local` tiene valores pero el proyecto de Supabase ya no existe.
@@ -132,10 +139,12 @@ El `.env.local` tiene valores pero el proyecto de Supabase ya no existe.
 |-------|---------|-------------------|--------|-------|
 | `local` (IndexedDB) | ✅ Sí | No | **Default, activo** | Auth propio (SHA-256 + sal en `auth-local.ts`). Primer arranque requiere crear la cuenta del profesor (sin password hardcodeado). |
 | `supabase` | ❌ No | Sí | No verificado | El proyecto original fue borrado (muerto/NXDOMAIN). `supabase.ts` mapea 1:1 con el schema, pero nombres de columnas y políticas RLS no se confirmaron contra un proyecto real. |
+| `firebase` | ❌ No | Sí | Implementado | Firestore + Firebase Auth + Firebase Storage. Requiere credenciales `VITE_FIREBASE_*`. Se activa si `VITE_FIREBASE_PROJECT_ID` está presente (sin probe). |
 
-Selector: `detectarMotor()` en `src/lib/db/index.ts` hace un probe HTTP (HEAD con
-timeout de 5 s) a `VITE_SUPABASE_URL/rest/v1/`. Si falla, usa `local` y avisa
-por consola.
+Selector: `detectarMotor()` en `src/lib/db/index.ts`. Si hay `VITE_FIREBASE_PROJECT_ID`,
+usa `firebase`. Si no, hace un probe HTTP (HEAD con timeout de 5 s) a
+`VITE_SUPABASE_URL/rest/v1/`; si responde usa `supabase`, si falla usa `local`
+y avisa por consola.
 
 ---
 

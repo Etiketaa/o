@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import type { PlanType, Profile, SlotPreferido } from "@/types";
 import { supabase } from "@/lib/supabase";
+import { firebaseAuth } from "@/lib/db/firebase";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+} from "firebase/auth";
 import { db, getMotor } from "@/lib/db";
 import {
   autenticar,
@@ -87,6 +94,30 @@ export const useAuthStore = create<AuthState>((set) => ({
       return {};
     }
 
+    if (getMotor() === "firebase") {
+      try {
+        const cred = await signInWithEmailAndPassword(firebaseAuth, email, password);
+        const perfil = await db.getPerfil(cred.user.uid);
+        if (!perfil) {
+          set({ loading: false });
+          return { error: "No se pudo cargar tu perfil. Contactá al profesor." };
+        }
+        set({ user: perfil, isAuthenticated: true, loading: false });
+        return {};
+      } catch (error) {
+        set({ loading: false });
+        const msg = error instanceof Error ? error.message : "No se pudo iniciar sesión";
+        return {
+          error:
+            msg.includes("invalid-credential") ||
+            msg.includes("wrong-password") ||
+            msg.includes("user-not-found")
+              ? "Correo o contraseña incorrectos"
+              : msg,
+        };
+      }
+    }
+
     // --- motor local ---
     const usuario = await autenticar(email, password);
     if (!usuario) {
@@ -142,6 +173,35 @@ export const useAuthStore = create<AuthState>((set) => ({
       return {};
     }
 
+    if (getMotor() === "firebase") {
+      try {
+        const cred = await createUserWithEmailAndPassword(firebaseAuth, datos.email, datos.password);
+        const frecuencia = Math.max(1, Math.min(5, datos.frecuencia_semana));
+        const plan = planDeFrecuencia(frecuencia);
+        const vecesMes = VECES_MES_POR_FRECUENCIA[frecuencia] ?? frecuencia * 4;
+        const perfil: Profile = {
+          id: cred.user.uid,
+          email: datos.email,
+          nombre: datos.nombre,
+          role: "alumno",
+          plan,
+          estado: "activo",
+          telefono: datos.telefono,
+          frecuencia_semana: frecuencia,
+          veces_mes_objetivo: vecesMes,
+          franja: datos.franja,
+          slots_preferidos: datos.slots_preferidos,
+          created_at: new Date().toISOString(),
+        };
+        await db.savePerfil(perfil);
+        set({ user: perfil, isAuthenticated: true, loading: false, necesitaSetup: false });
+        return {};
+      } catch (error) {
+        set({ loading: false });
+        return { error: error instanceof Error ? error.message : "No se pudo crear la cuenta" };
+      }
+    }
+
     // --- motor local ---
     try {
       const usuario = await crearUsuario(
@@ -175,6 +235,32 @@ export const useAuthStore = create<AuthState>((set) => ({
     const frecuencia = Math.max(1, Math.min(5, datos.frecuencia_semana));
     const plan = planDeFrecuencia(frecuencia);
     const vecesMes = VECES_MES_POR_FRECUENCIA[frecuencia] ?? frecuencia * 4;
+
+    if (getMotor() === "firebase") {
+      try {
+        const cred = await createUserWithEmailAndPassword(firebaseAuth, datos.email, datos.password);
+        const perfil: Profile = {
+          id: cred.user.uid,
+          email: datos.email,
+          nombre: datos.nombre,
+          role: "admin",
+          plan,
+          estado: "activo",
+          telefono: datos.telefono,
+          frecuencia_semana: frecuencia,
+          veces_mes_objetivo: vecesMes,
+          franja: datos.franja,
+          slots_preferidos: datos.slots_preferidos,
+          created_at: new Date().toISOString(),
+        };
+        await db.savePerfil(perfil);
+        set({ user: perfil, isAuthenticated: true, loading: false, necesitaSetup: false });
+        return {};
+      } catch (error) {
+        set({ loading: false });
+        return { error: error instanceof Error ? error.message : "No se pudo crear la cuenta" };
+      }
+    }
 
     try {
       if (getMotor() === "supabase") {
@@ -236,6 +322,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (getMotor() === "supabase") {
       await supabase.auth.signOut();
     }
+    if (getMotor() === "firebase") {
+      await firebaseSignOut(firebaseAuth);
+    }
     borrarSesionLocal();
     set({ user: null, isAuthenticated: false, loading: false });
   },
@@ -247,6 +336,31 @@ export const useAuthStore = create<AuthState>((set) => ({
       } = await supabase.auth.getSession();
       if (session) {
         const perfil = await db.getPerfil(session.user.id);
+        if (perfil) {
+          set({ user: perfil, isAuthenticated: true, loading: false });
+          return;
+        }
+      }
+      set({ loading: false });
+      return;
+    }
+
+    if (getMotor() === "firebase") {
+      const perfiles = await db.listPerfiles();
+      if (perfiles.length === 0) {
+        set({ loading: false, necesitaSetup: true });
+        return;
+      }
+
+      const usuarioFirebase = await new Promise<import("firebase/auth").User | null>((resolve) => {
+        const unsub = onAuthStateChanged(firebaseAuth, (u) => {
+          unsub();
+          resolve(u);
+        });
+      });
+
+      if (usuarioFirebase) {
+        const perfil = await db.getPerfil(usuarioFirebase.uid);
         if (perfil) {
           set({ user: perfil, isAuthenticated: true, loading: false });
           return;

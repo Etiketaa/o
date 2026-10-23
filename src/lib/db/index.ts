@@ -1,15 +1,16 @@
 import type { DataStore } from "./tipos";
 import { localStore } from "./local";
 import { supabaseStore } from "./supabase";
+import { firebaseStore } from "./firebase";
 
-export type Motor = "local" | "supabase";
+export type Motor = "local" | "supabase" | "firebase";
 
 let motorActual: Motor = "local";
 let promesaDeteccion: Promise<Motor> | null = null;
 
 /**
- * ¿El backend configurado responde? Un proyecto de Supabase borrado o
- * pausado deja de resolver DNS, y el `.env` sigue apuntando ahí.
+ * ¿El backend de Supabase configurado responde? Un proyecto borrado o pausado
+ * deja de resolver DNS, y el `.env` sigue apuntando ahí.
  * Si no responde, caemos a modo local en vez de romper la app.
  */
 async function respondeSupabase(): Promise<boolean> {
@@ -34,7 +35,14 @@ async function respondeSupabase(): Promise<boolean> {
 /** Detecta (una sola vez) qué motor usar. */
 export function detectarMotor(): Promise<Motor> {
   if (!promesaDeteccion) {
-    promesaDeteccion = respondeSupabase().then((ok) => {
+    promesaDeteccion = (async () => {
+      const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID as string | undefined;
+      if (projectId) {
+        motorActual = "firebase";
+        return motorActual;
+      }
+
+      const ok = await respondeSupabase();
       motorActual = ok ? "supabase" : "local";
       if (!ok && import.meta.env.VITE_SUPABASE_URL) {
         console.warn(
@@ -42,7 +50,7 @@ export function detectarMotor(): Promise<Motor> {
         );
       }
       return motorActual;
-    });
+    })();
   }
   return promesaDeteccion;
 }
@@ -57,7 +65,12 @@ export function getMotor(): Motor {
  */
 export const db = new Proxy({} as DataStore, {
   get(_target, prop: string) {
-    const store = motorActual === "supabase" ? supabaseStore : localStore;
+    const store =
+      motorActual === "firebase"
+        ? firebaseStore
+        : motorActual === "supabase"
+          ? supabaseStore
+          : localStore;
     const valor = (store as unknown as Record<string, unknown>)[prop];
     if (typeof valor === "function") {
       return (valor as (...args: unknown[]) => unknown).bind(store);
